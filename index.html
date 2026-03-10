@@ -65,7 +65,10 @@ textarea{min-height:85px;resize:vertical;}
     <h1>🔄 Shift Handover Board</h1>
     <p id="headerInfo">Loading...</p>
   </div>
-  <button class="header-btn" onclick="showView('log')">+ Log Task</button>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="header-btn" onclick="downloadCSV()">⬇ Download Excel</button>
+    <button class="header-btn" onclick="showView('log')">+ Log Task</button>
+  </div>
 </div>
 
 <nav>
@@ -298,6 +301,24 @@ function deleteTask(id){
 
 function closeModal(e){if(e.target.id==='modal')document.getElementById('modal').style.display='none';}
 function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''; }
+
+function downloadCSV(){
+  const headers=['Task Name','Description','Shift','Priority','Status','Submitted By','Date'];
+  const rows=tasks.map(t=>[
+    `"${(t.title||'').replace(/"/g,'""')}"`,
+    `"${(t.description||'').replace(/"/g,'""')}"`,
+    t.shift, t.priority, t.status,
+    `"${(t.submittedBy||'').replace(/"/g,'""')}"`,
+    fmt(t.date)
+  ]);
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`Shift_Handover_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  notify('✅ CSV downloaded! Open with Excel.');
+}
 
 // init
 document.getElementById('headerInfo').textContent=`Current Shift: ${getCurrentShift()} • ${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}`;
