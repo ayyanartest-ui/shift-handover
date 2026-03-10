@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Shift Handover Board</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:#f0f2f7;color:#1a1a2e;min-height:100vh;}
+.header{background:linear-gradient(135deg,#6264A7,#464775);color:white;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.header h1{font-size:18px;font-weight:700;}
+.header p{font-size:12px;opacity:.85;margin-top:2px;}
+.header-btn{background:white;color:#6264A7;border:none;padding:8px 18px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;}
+nav{display:flex;gap:4px;background:white;padding:8px 16px;box-shadow:0 2px 6px rgba(0,0,0,.08);overflow-x:auto;}
+nav button{padding:8px 16px;border:none;border-radius:6px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap;background:transparent;color:#555;}
+nav button.active{background:#6264A7;color:white;}
+.container{max-width:900px;margin:0 auto;padding:16px;}
+.card{background:white;border-radius:12px;padding:20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.stat-card{background:white;border-radius:10px;padding:16px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.06);}
+.stat-num{font-size:28px;font-weight:800;}
+.stat-label{font-size:12px;color:#777;margin-top:4px;}
+label.lbl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#555;margin-bottom:4px;}
+input,select,textarea{width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid #e0e0e0;font-size:14px;outline:none;margin-bottom:10px;font-family:inherit;background:white;}
+textarea{min-height:85px;resize:vertical;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.btn{padding:10px 22px;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;color:white;}
+.btn-primary{background:#6264A7;}
+.btn-danger{background:#ef4444;}
+.btn-sm{padding:7px 14px;font-size:12px;}
+.task-card{background:white;border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:4px solid #6264A7;cursor:pointer;transition:transform .15s;}
+.task-card:hover{transform:translateX(3px);}
+.task-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;}
+.task-title{font-weight:700;font-size:14px;}
+.task-meta{font-size:12px;color:#aaa;margin-top:4px;}
+.badges{display:flex;gap:6px;flex-wrap:wrap;}
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal{background:white;border-radius:14px;padding:24px;width:100%;max-width:480px;box-shadow:0 8px 32px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto;}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+.modal-title{font-weight:700;font-size:16px;flex:1;}
+.close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;line-height:1;}
+.status-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.status-btn{padding:8px 14px;border-radius:7px;font-weight:700;font-size:13px;cursor:pointer;border:2px solid;}
+.notif{position:fixed;top:16px;right:16px;padding:12px 20px;border-radius:8px;font-weight:600;font-size:14px;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2);color:white;animation:slideIn .3s ease;}
+@keyframes slideIn{from{transform:translateX(60px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.progress-wrap{background:#f0f0f0;border-radius:6px;height:10px;overflow:hidden;margin:6px 0 10px;}
+.progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#6264A7,#22c55e);transition:width .5s;}
+.empty{text-align:center;padding:30px;color:#aaa;font-size:14px;}
+.section-title{font-weight:700;font-size:15px;margin-bottom:12px;}
+.desc-box{font-size:13px;color:#555;background:#f7f7f7;padding:12px;border-radius:8px;margin-bottom:14px;line-height:1.6;}
+.filter-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(max-width:600px){
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .row2,.filter-row{grid-template-columns:1fr;}
+}
+.announce{background:linear-gradient(135deg,#e8f4fd,#dbeafe);border:1px solid #93c5fd;border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px;color:#1e40af;}
+.announce strong{display:block;font-size:14px;margin-bottom:4px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>🔄 Shift Handover Board</h1>
+    <p id="headerInfo">Loading...</p>
+  </div>
+  <button class="header-btn" onclick="showView('log')">+ Log Task</button>
+</div>
+
+<nav>
+  <button class="active" onclick="showView('dashboard',this)">📊 Dashboard</button>
+  <button onclick="showView('tasks',this)">📋 All Tasks</button>
+  <button onclick="showView('log',this)">➕ Log Task</button>
+  <button onclick="showView('summary',this)">📈 Summary</button>
+</nav>
+
+<div class="container">
+  <div id="view-dashboard"></div>
+  <div id="view-tasks" style="display:none"></div>
+  <div id="view-log" style="display:none"></div>
+  <div id="view-summary" style="display:none"></div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="modal" style="display:none" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="close-btn" onclick="document.getElementById('modal').style.display='none'">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Notification -->
+<div class="notif" id="notif" style="display:none"></div>
+
+<script>
+const SHIFTS=['Morning','Evening','Night'];
+const PRIORITIES=['High','Medium','Low'];
+const STATUSES=['Pending','In Progress','Done'];
+const P_COLOR={High:'#ef4444',Medium:'#f59e0b',Low:'#22c55e'};
+const S_COLOR={'Pending':'#f59e0b','In Progress':'#3b82f6','Done':'#22c55e'};
+const P_ICON={High:'🔴',Medium:'🟡',Low:'🟢'};
+const S_ICON={'Pending':'⏳','In Progress':'🔄','Done':'✅'};
+
+let tasks=JSON.parse(localStorage.getItem('handover_tasks')||'[]');
+let curView='dashboard';
+
+if(tasks.length===0){
+  tasks=[
+    {id:uid(),title:'Database backup not completed',description:'Scheduled backup at 2PM failed. Check logs and retry.',shift:'Morning',priority:'High',status:'Pending',submittedBy:'Ravi Kumar',date:new Date(Date.now()-3600000).toISOString()},
+    {id:uid(),title:'Customer ticket #4521 open',description:'Customer reported login issue. Needs follow-up call.',shift:'Morning',priority:'Medium',status:'In Progress',submittedBy:'Priya S',date:new Date(Date.now()-7200000).toISOString()},
+    {id:uid(),title:'Server room AC alarm',description:'Minor temperature fluctuation. Monitoring required.',shift:'Evening',priority:'Low',status:'Pending',submittedBy:'Arun M',date:new Date(Date.now()-1800000).toISOString()}
+  ];
+  save();
+}
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function save(){localStorage.setItem('handover_tasks',JSON.stringify(tasks));}
+function fmt(d){return new Date(d).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
+function getCurrentShift(){const h=new Date().getHours();return h>=6&&h<14?'Morning':h>=14&&h<22?'Evening':'Night';}
+
+function notify(msg,type='success'){
+  const n=document.getElementById('notif');
+  n.textContent=msg;
+  n.style.background=type==='error'?'#ef4444':'#22c55e';
+  n.style.display='block';
+  setTimeout(()=>n.style.display='none',3000);
+}
+
+function badge(text,color){return `<span class="badge" style="background:${color}22;color:${color}">${text}</span>`;}
+
+function showView(v,btn){
+  curView=v;
+  ['dashboard','tasks','log','summary'].forEach(x=>{
+    document.getElementById('view-'+x).style.display=x===v?'block':'none';
+  });
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  else{const btns=document.querySelectorAll('nav button');const idx={dashboard:0,tasks:1,log:2,summary:3}[v];if(btns[idx])btns[idx].classList.add('active');}
+  render(v);
+}
+
+function render(v){
+  if(v==='dashboard')renderDashboard();
+  if(v==='tasks')renderTasks();
+  if(v==='log')renderLog();
+  if(v==='summary')renderSummary();
+}
+
+function renderDashboard(){
+  const shift=getCurrentShift();
+  const now=new Date();
+  document.getElementById('headerInfo').textContent=`Current Shift: ${shift} • ${now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}`;
+  const total=tasks.length,pending=tasks.filter(t=>t.status==='Pending').length,ip=tasks.filter(t=>t.status==='In Progress').length,done=tasks.filter(t=>t.status==='Done').length;
+  const shiftOpen=tasks.filter(t=>t.shift===shift&&t.status!=='Done');
+  let html=`
+  <div class="announce"><strong>👋 Welcome to ${shift} Shift!</strong>There are <b>${shiftOpen.length}</b> open task(s) from the previous shift. Please review below.</div>
+  <div class="stat-grid">
+    ${[['Total',total,'#6264A7'],['Pending',pending,'#f59e0b'],['In Progress',ip,'#3b82f6'],['Done',done,'#22c55e']].map(([l,v,c])=>`
+    <div class="stat-card" style="border-top:4px solid ${c}">
+      <div class="stat-num" style="color:${c}">${v}</div>
+      <div class="stat-label">${l}</div>
+    </div>`).join('')}
+  </div>
+  <div class="card">
+    <div class="section-title">⚠️ ${shift} Shift — Open Tasks (${shiftOpen.length})</div>
+    ${shiftOpen.length===0?'<div class="empty">✅ No pending tasks for this shift!</div>':shiftOpen.map(t=>taskCardHTML(t)).join('')}
+  </div>
+  <div class="card">
+    <div class="section-title">📋 Recent Tasks</div>
+    ${tasks.slice(0,5).map(t=>taskCardHTML(t)).join('')}
+    <button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="showView('tasks')">View All Tasks →</button>
+  </div>`;
+  document.getElementById('view-dashboard').innerHTML=html;
+}
+
+function taskCardHTML(t){
+  return `<div class="task-card" style="border-left-color:${P_COLOR[t.priority]}" onclick="openTask('${t.id}')">
+    <div class="task-top">
+      <div class="task-title">${P_ICON[t.priority]} ${esc(t.title)}</div>
+      <div class="badges">${badge(t.priority,P_COLOR[t.priority])}${badge(S_ICON[t.status]+' '+t.status,S_COLOR[t.status])}${badge(t.shift,'#6264A7')}</div>
+    </div>
+    ${t.description?`<div style="font-size:13px;color:#666;margin:5px 0 2px">${esc(t.description).substring(0,80)}${t.description.length>80?'...':''}</div>`:''}
+    <div class="task-meta">By ${esc(t.submittedBy)} • ${fmt(t.date)}</div>
+  </div>`;
+}
+
+function renderTasks(){
+  const sf=document.getElementById('f-shift')?document.getElementById('f-shift').value:'All';
+  const stf=document.getElementById('f-status')?document.getElementById('f-status').value:'All';
+  const pf=document.getElementById('f-priority')?document.getElementById('f-priority').value:'All';
+  const filtered=tasks.filter(t=>(sf==='All'||t.shift===sf)&&(stf==='All'||t.status===stf)&&(pf==='All'||t.priority===pf));
+  let html=`<div class="card">
+    <div class="section-title">🔍 Filter Tasks</div>
+    <div class="filter-row">
+      <div><label class="lbl">Shift</label><select id="f-shift" onchange="renderTasks()"><option>All</option>${SHIFTS.map(s=>`<option${sf===s?' selected':''}>${s}</option>`).join('')}</select></div>
+      <div><label class="lbl">Status</label><select id="f-status" onchange="renderTasks()"><option>All</option>${STATUSES.map(s=>`<option${stf===s?' selected':''}>${s}</option>`).join('')}</select></div>
+      <div><label class="lbl">Priority</label><select id="f-priority" onchange="renderTasks()"><option>All</option>${PRIORITIES.map(p=>`<option${pf===p?' selected':''}>${p}</option>`).join('')}</select></div>
+    </div>
+  </div>
+  <div style="font-size:13px;color:#888;margin-bottom:8px">${filtered.length} task(s) found</div>
+  ${filtered.length===0?'<div class="card empty">No tasks match this filter.</div>':filtered.map(t=>taskCardHTML(t)).join('')}`;
+  document.getElementById('view-tasks').innerHTML=html;
+}
+
+function renderLog(){
+  document.getElementById('view-log').innerHTML=`
+  <div class="card">
+    <div class="section-title">➕ Log a Pending Task</div>
+    <label class="lbl">Your Name *</label>
+    <input id="f-name" placeholder="e.g. Ravi Kumar"/>
+    <label class="lbl">Task Name *</label>
+    <input id="f-title" placeholder="e.g. Server backup failed"/>
+    <label class="lbl">Description / Notes</label>
+    <textarea id="f-desc" placeholder="Describe what's pending and any context for next shift..."></textarea>
+    <div class="row2">
+      <div><label class="lbl">Shift</label>
+        <select id="f-taskshift">${SHIFTS.map(s=>`<option${s===getCurrentShift()?' selected':''}>${s}</option>`).join('')}</select>
+      </div>
+      <div><label class="lbl">Priority</label>
+        <select id="f-pri">${PRIORITIES.map(p=>`<option${p==='Medium'?' selected':''}>${p}</option>`).join('')}</select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="submitTask()">✅ Submit Task</button>
+  </div>`;
+}
+
+function submitTask(){
+  const name=document.getElementById('f-name').value.trim();
+  const title=document.getElementById('f-title').value.trim();
+  const desc=document.getElementById('f-desc').value.trim();
+  const shift=document.getElementById('f-taskshift').value;
+  const pri=document.getElementById('f-pri').value;
+  if(!name||!title){notify('Please fill Your Name and Task Name.','error');return;}
+  tasks.unshift({id:uid(),title,description:desc,shift,priority:pri,status:'Pending',submittedBy:name,date:new Date().toISOString()});
+  save();
+  notify('✅ Task logged successfully!');
+  showView('dashboard');
+}
+
+function renderSummary(){
+  let html='<div class="card"><div class="section-title">📈 Shift-wise Summary</div>';
+  SHIFTS.forEach(sh=>{
+    const st=tasks.filter(t=>t.shift===sh);
+    const done=st.filter(t=>t.status==='Done').length;
+    const pct=st.length?Math.round(done/st.length*100):0;
+    html+=`<div style="margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <b>${sh} Shift</b><span style="font-size:13px;color:#888">${done}/${st.length} done (${pct}%)</span>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="badges">${STATUSES.map(s=>{const c=st.filter(t=>t.status===s).length;return badge(S_ICON[s]+' '+s+': '+c,S_COLOR[s]);}).join('')}</div>
+    </div>`;
+  });
+  html+='</div>';
+  const high=tasks.filter(t=>t.priority==='High'&&t.status!=='Done');
+  html+=`<div class="card"><div class="section-title">🔴 High Priority Pending (${high.length})</div>
+    ${high.length===0?'<div class="empty">✅ No high priority pending tasks!</div>':high.map(t=>taskCardHTML(t)).join('')}
+  </div>`;
+  document.getElementById('view-summary').innerHTML=html;
+}
+
+function openTask(id){
+  const t=tasks.find(x=>x.id===id);
+  if(!t)return;
+  document.getElementById('modalTitle').textContent=t.title;
+  document.getElementById('modalBody').innerHTML=`
+    <div class="badges" style="margin-bottom:12px">${badge(P_ICON[t.priority]+' '+t.priority,P_COLOR[t.priority])}${badge(S_ICON[t.status]+' '+t.status,S_COLOR[t.status])}${badge(t.shift+' Shift','#6264A7')}</div>
+    ${t.description?`<div class="desc-box">${esc(t.description)}</div>`:''}
+    <div style="font-size:13px;color:#888;margin-bottom:16px">Logged by <b>${esc(t.submittedBy)}</b> on ${fmt(t.date)}</div>
+    <label class="lbl">Update Status</label>
+    <div class="status-btns">
+      ${STATUSES.map(s=>`<button class="status-btn" style="border-color:${S_COLOR[s]};background:${t.status===s?S_COLOR[s]:'white'};color:${t.status===s?'white':S_COLOR[s]}" onclick="updateStatus('${id}','${s}')">${S_ICON[s]} ${s}</button>`).join('')}
+    </div>
+    <button class="btn btn-danger btn-sm" onclick="deleteTask('${id}')">🗑 Remove Task</button>`;
+  document.getElementById('modal').style.display='flex';
+}
+
+function updateStatus(id,status){
+  tasks=tasks.map(t=>t.id===id?{...t,status}:t);
+  save();
+  notify(`Status updated to "${status}"`);
+  openTask(id);
+  render(curView);
+}
+
+function deleteTask(id){
+  if(!confirm('Remove this task?'))return;
+  tasks=tasks.filter(t=>t.id!==id);
+  save();
+  document.getElementById('modal').style.display='none';
+  notify('Task removed.');
+  render(curView);
+}
+
+function closeModal(e){if(e.target.id==='modal')document.getElementById('modal').style.display='none';}
+function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''; }
+
+// init
+document.getElementById('headerInfo').textContent=`Current Shift: ${getCurrentShift()} • ${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}`;
+renderDashboard();
+</script>
+</body>
+</html>
