@@ -243,7 +243,7 @@ function doLogin(){
     errEl.textContent='❌ Only @reachmobile.com email addresses are allowed.';
     errEl.style.display='block'; return;
   }
-  const user = USERS.find(u=>u.email.toLowerCase()===email && u.password===password);
+  const user = getUsers().find(u=>u.email.toLowerCase()===email && u.password===password);
   if(!user){
     errEl.textContent='❌ Invalid email or password. Please try again.';
     errEl.style.display='block'; return;
@@ -606,40 +606,194 @@ function renderSummary(){
 }
 
 // ─── ADMIN PANEL ─────────────────────────────────────────────────────
+let adminUsers = JSON.parse(localStorage.getItem('ho_users') || 'null') || USERS.map(u=>({...u}));
+let shiftsConfig = JSON.parse(localStorage.getItem('ho_shifts') || 'null') || {...SHIFTS_CONFIG};
+function saveUsers(){localStorage.setItem('ho_users',JSON.stringify(adminUsers));}
+function saveShifts(){localStorage.setItem('ho_shifts',JSON.stringify(shiftsConfig));}
+
 function renderAdmin(){
   if(curUser.role!=='Admin'){document.getElementById('view-admin').innerHTML='<div class="card empty">⛔ Admin access only.</div>';return;}
-  let html=`<div class="card">
-    <div class="section-title">⚙️ Admin Panel</div>
-    <div class="admin-section">
-      <div style="font-weight:700;margin-bottom:10px">👥 Team Members (${USERS.length})</div>
-      ${USERS.map(u=>`<div class="user-row">
-        <div>
-          <span style="font-weight:600">${esc(u.name)}</span>
-          <span style="font-size:11px;color:#888;margin-left:8px">${esc(u.email)}</span>
-        </div>
-        <div class="badges">
-          ${badge(u.role,ROLE_COLOR[u.role]||'#888')}
-          ${badge(u.shift,'#0891b2')}
-          ${badge(u.active?'Active':'Inactive',u.active?'#22c55e':'#ef4444')}
-        </div>
-      </div>`).join('')}
-      <div style="margin-top:12px;font-size:13px;color:#888">💡 To add/edit users, update the USERS array in the app code and re-upload to GitHub.</div>
+  const tabs=['users','shifts','stats'];
+  const curTab=window._adminTab||'users';
+  document.getElementById('view-admin').innerHTML=`
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="display:flex;border-bottom:2px solid #f0f0f0;">
+      ${[['users','👥 Users'],['shifts','⏰ Shift Timings'],['stats','📊 Statistics']].map(([k,l])=>`
+      <button onclick="window._adminTab='${k}';renderAdmin()" style="flex:1;padding:12px;border:none;background:${curTab===k?'#6264A7':'white'};color:${curTab===k?'white':'#555'};font-weight:700;font-size:13px;cursor:pointer">${l}</button>`).join('')}
     </div>
-    <div class="admin-section" style="margin-top:14px">
-      <div style="font-weight:700;margin-bottom:10px">📊 Task Statistics</div>
-      <div class="badges">
-        ${badge('Total: '+tasks.length,'#6264A7')}
-        ${badge('Open: '+tasks.filter(t=>t.status==='Open').length,'#f59e0b')}
-        ${badge('In Progress: '+tasks.filter(t=>t.status==='In Progress').length,'#3b82f6')}
-        ${badge('Closed: '+tasks.filter(t=>t.status==='Closed').length,'#6b7280')}
-      </div>
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-danger btn-sm" onclick="clearClosedTasks()">🗑 Clear All Closed Tasks</button>
-        <button class="btn btn-primary btn-sm" onclick="downloadCSV()">⬇ Export All to Excel</button>
-      </div>
-    </div>
+    <div style="padding:20px" id="adminContent"></div>
   </div>`;
-  document.getElementById('view-admin').innerHTML=html;
+
+  if(curTab==='users') renderAdminUsers();
+  if(curTab==='shifts') renderAdminShifts();
+  if(curTab==='stats') renderAdminStats();
+}
+
+function renderAdminUsers(){
+  const el=document.getElementById('adminContent');
+  el.innerHTML=`
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div style="font-weight:700;font-size:15px">👥 Team Members (${adminUsers.length})</div>
+    <button class="btn btn-primary btn-sm" onclick="openAddUser()">+ Add User</button>
+  </div>
+  ${adminUsers.map((u,i)=>`
+  <div style="background:#f9f9ff;border-radius:10px;padding:12px 14px;margin-bottom:10px;border:1px solid #e8e8f7">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-weight:700;font-size:14px">${esc(u.name)}</div>
+        <div style="font-size:12px;color:#888;margin-top:2px">${esc(u.email)}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        ${badge(u.role,ROLE_COLOR[u.role]||'#888')}
+        ${badge(u.shift,'#0891b2')}
+        ${badge(u.active?'Active':'Inactive',u.active?'#22c55e':'#ef4444')}
+        <button class="btn btn-primary btn-sm" onclick="openEditUser(${i})">✏️ Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="toggleUserActive(${i})">${u.active?'Deactivate':'Activate'}</button>
+      </div>
+    </div>
+  </div>`).join('')}`;
+}
+
+function openAddUser(){
+  document.getElementById('modalTitle').textContent='➕ Add New User';
+  document.getElementById('modalBody').innerHTML=userForm({name:'',email:'',password:'',role:'Agent',shift:'Morning',active:true},'addUser()');
+  document.getElementById('modal').style.display='flex';
+}
+
+function openEditUser(i){
+  const u=adminUsers[i];
+  document.getElementById('modalTitle').textContent='✏️ Edit User';
+  document.getElementById('modalBody').innerHTML=userForm(u,`saveEditUser(${i})`);
+  document.getElementById('modal').style.display='flex';
+}
+
+function userForm(u,onSave){
+  return `
+  <label class="lbl">Full Name *</label>
+  <input id="uf-name" value="${esc(u.name)}" placeholder="e.g. Ravi Kumar"/>
+  <label class="lbl">Email * (@reachmobile.com)</label>
+  <input id="uf-email" value="${esc(u.email)}" placeholder="name@reachmobile.com"/>
+  <label class="lbl">Password *</label>
+  <input id="uf-pass" type="password" value="${esc(u.password)}" placeholder="Min 6 characters"/>
+  <div class="row2">
+    <div><label class="lbl">Role</label>
+      <select id="uf-role">${['Admin','Supervisor','Agent'].map(r=>`<option${r===u.role?' selected':''}>${r}</option>`).join('')}</select></div>
+    <div><label class="lbl">Shift</label>
+      <select id="uf-shift">${SHIFTS.map(s=>`<option${s===u.shift?' selected':''}>${s}</option>`).join('')}</select></div>
+  </div>
+  <label class="lbl">Status</label>
+  <select id="uf-active"><option value="true"${u.active?' selected':''}>Active</option><option value="false"${!u.active?' selected':''}>Inactive</option></select>
+  <div style="margin-top:14px"><button class="btn btn-primary" onclick="${onSave}">💾 Save User</button></div>`;
+}
+
+function addUser(){
+  const name=document.getElementById('uf-name').value.trim();
+  const email=document.getElementById('uf-email').value.trim().toLowerCase();
+  const pass=document.getElementById('uf-pass').value;
+  if(!name||!email||!pass){notify('Please fill all required fields.','error');return;}
+  if(!email.endsWith('@reachmobile.com')){notify('Email must be @reachmobile.com','error');return;}
+  if(pass.length<6){notify('Password must be at least 6 characters.','error');return;}
+  if(adminUsers.find(u=>u.email.toLowerCase()===email)){notify('Email already exists!','error');return;}
+  adminUsers.push({
+    id:'u'+Date.now(),name,email,password:pass,
+    role:document.getElementById('uf-role').value,
+    shift:document.getElementById('uf-shift').value,
+    active:document.getElementById('uf-active').value==='true'
+  });
+  saveUsers();
+  document.getElementById('modal').style.display='none';
+  notify('✅ User added successfully!');
+  renderAdminUsers();
+}
+
+function saveEditUser(i){
+  const name=document.getElementById('uf-name').value.trim();
+  const email=document.getElementById('uf-email').value.trim().toLowerCase();
+  const pass=document.getElementById('uf-pass').value;
+  if(!name||!email||!pass){notify('Please fill all required fields.','error');return;}
+  if(!email.endsWith('@reachmobile.com')){notify('Email must be @reachmobile.com','error');return;}
+  adminUsers[i]={...adminUsers[i],name,email,password:pass,
+    role:document.getElementById('uf-role').value,
+    shift:document.getElementById('uf-shift').value,
+    active:document.getElementById('uf-active').value==='true'
+  };
+  saveUsers();
+  document.getElementById('modal').style.display='none';
+  notify('✅ User updated!');
+  renderAdminUsers();
+}
+
+function toggleUserActive(i){
+  adminUsers[i].active=!adminUsers[i].active;
+  saveUsers();
+  notify(`User ${adminUsers[i].active?'activated':'deactivated'}.`);
+  renderAdminUsers();
+}
+
+function renderAdminShifts(){
+  const el=document.getElementById('adminContent');
+  el.innerHTML=`
+  <div style="font-weight:700;font-size:15px;margin-bottom:14px">⏰ Shift Timing Configuration</div>
+  ${['Morning','Afternoon','Night'].map(sh=>{
+    const c=shiftsConfig[sh]||SHIFTS_CONFIG[sh];
+    return `<div style="background:#f9f9ff;border-radius:10px;padding:16px;margin-bottom:14px;border:1px solid #e8e8f7">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px">${{Morning:'🌅',Afternoon:'🌆',Night:'🌙'}[sh]} ${sh} Shift</div>
+      <div class="row2">
+        <div><label class="lbl">Start Time IST</label>
+          <input id="sh-${sh}-ist-start" value="${c.ist.split('–')[0].trim()}" placeholder="e.g. 6:00 AM"/></div>
+        <div><label class="lbl">End Time IST</label>
+          <input id="sh-${sh}-ist-end" value="${c.ist.split('–')[1]?.trim()||''}" placeholder="e.g. 3:00 PM"/></div>
+      </div>
+      <div class="row2">
+        <div><label class="lbl">Start Time EST</label>
+          <input id="sh-${sh}-est-start" value="${c.est.split('–')[0].trim()}" placeholder="e.g. 7:30 PM"/></div>
+        <div><label class="lbl">End Time EST</label>
+          <input id="sh-${sh}-est-end" value="${c.est.split('–')[1]?.trim()||''}" placeholder="e.g. 4:30 AM"/></div>
+      </div>
+      <div class="row2">
+        <div><label class="lbl">Notify Time IST</label>
+          <input id="sh-${sh}-nist" value="${c.notifyIST}" placeholder="e.g. 6:15 AM"/></div>
+        <div><label class="lbl">Notify Time EST</label>
+          <input id="sh-${sh}-nest" value="${c.notifyEST}" placeholder="e.g. 7:45 PM"/></div>
+      </div>
+    </div>`;
+  }).join('')}
+  <button class="btn btn-primary" onclick="saveShiftTimings()">💾 Save Shift Timings</button>`;
+}
+
+function saveShiftTimings(){
+  ['Morning','Afternoon','Night'].forEach(sh=>{
+    const istS=document.getElementById(`sh-${sh}-ist-start`).value.trim();
+    const istE=document.getElementById(`sh-${sh}-ist-end`).value.trim();
+    const estS=document.getElementById(`sh-${sh}-est-start`).value.trim();
+    const estE=document.getElementById(`sh-${sh}-est-end`).value.trim();
+    const nIST=document.getElementById(`sh-${sh}-nist`).value.trim();
+    const nEST=document.getElementById(`sh-${sh}-nest`).value.trim();
+    shiftsConfig[sh]={ist:`${istS} – ${istE}`,est:`${estS} – ${estE}`,notifyIST:nIST,notifyEST:nEST};
+  });
+  saveShifts();
+  // update runtime config
+  Object.assign(SHIFTS_CONFIG,shiftsConfig);
+  notify('✅ Shift timings saved!');
+  updateHeader();
+}
+
+function renderAdminStats(){
+  const el=document.getElementById('adminContent');
+  el.innerHTML=`
+  <div style="font-weight:700;font-size:15px;margin-bottom:14px">📊 Task Statistics</div>
+  <div class="stat-grid" style="margin-bottom:16px">
+    ${[['Total',tasks.length,'#6264A7'],['Open',tasks.filter(t=>t.status==='Open').length,'#f59e0b'],['In Progress',tasks.filter(t=>t.status==='In Progress').length,'#3b82f6'],['Closed',tasks.filter(t=>t.status==='Closed').length,'#6b7280']].map(([l,v,c])=>`
+    <div class="stat-card" style="border-top:4px solid ${c}"><div class="stat-num" style="color:${c}">${v}</div><div class="stat-label">${l}</div></div>`).join('')}
+  </div>
+  <div style="font-weight:700;margin-bottom:8px">By Item Type</div>
+  <div class="badges" style="margin-bottom:16px">
+    ${ITEM_TYPES.map(tp=>badge(T_ICON[tp]+' '+tp+': '+tasks.filter(t=>t.type===tp).length,'#6264A7')).join('')}
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-danger btn-sm" onclick="clearClosedTasks()">🗑 Clear All Closed Tasks</button>
+    <button class="btn btn-primary btn-sm" onclick="downloadCSV()">⬇ Export All to Excel</button>
+  </div>`;
 }
 
 function clearClosedTasks(){
@@ -647,6 +801,9 @@ function clearClosedTasks(){
   tasks=tasks.filter(t=>t.status!=='Closed');save();
   notify('All closed tasks cleared.');renderAdmin();
 }
+
+// override login to check adminUsers
+function getUsers(){return JSON.parse(localStorage.getItem('ho_users')||'null')||USERS;}
 
 // ─── PROFILE ─────────────────────────────────────────────────────────
 function renderProfile(){
@@ -745,7 +902,8 @@ function downloadCSV(){
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────
-if(curUser){
+  Object.assign(SHIFTS_CONFIG, JSON.parse(localStorage.getItem('ho_shifts')||'null')||{});
+  if(curUser){
   bootApp();
 } else {
   document.getElementById('loginScreen').style.display='flex';
