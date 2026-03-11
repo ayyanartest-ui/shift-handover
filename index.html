@@ -4,20 +4,21 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Shift Handover Board v2.0</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Segoe UI',sans-serif;background:#f0f2f7;color:#1a1a2e;min-height:100vh;}
-
-/* LOGIN */
 .login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#6264A7,#464775);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;}
 .login-card{background:white;border-radius:16px;padding:36px;width:100%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,.25);}
 .login-logo{text-align:center;margin-bottom:20px;}
 .login-logo div:first-child{font-size:44px;}
-.login-logo h2{font-size:22px;font-weight:700;margin-top:8px;color:#1a1a2e;}
+.login-logo h2{font-size:22px;font-weight:700;margin-top:8px;}
 .login-logo p{font-size:13px;color:#888;margin-top:4px;}
 .login-error{background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;color:#dc2626;margin-bottom:12px;display:none;}
-
-/* HEADER */
+.loading-screen{position:fixed;inset:0;background:linear-gradient(135deg,#6264A7,#464775);z-index:300;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;gap:16px;}
+.spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 .header{background:linear-gradient(135deg,#6264A7,#464775);color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 .header h1{font-size:17px;font-weight:700;}
 .header p{font-size:11px;opacity:.85;margin-top:2px;}
@@ -25,22 +26,15 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f2f7;color:#1a1a2e;min-heig
 .hbtn{background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;}
 .hbtn.white{background:white;color:#6264A7;}
 .hbtn.red{background:#ef4444;border-color:#ef4444;}
-
-/* NAV */
 nav{display:flex;gap:4px;background:white;padding:8px 16px;box-shadow:0 2px 6px rgba(0,0,0,.08);overflow-x:auto;}
 nav button{padding:7px 14px;border:none;border-radius:6px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;background:transparent;color:#555;}
 nav button.active{background:#6264A7;color:white;}
-
 .container{max-width:960px;margin:0 auto;padding:16px;}
 .card{background:white;border-radius:12px;padding:20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
-
-/* STATS */
 .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
 .stat-card{background:white;border-radius:10px;padding:14px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.06);}
 .stat-num{font-size:26px;font-weight:800;}
 .stat-label{font-size:11px;color:#777;margin-top:3px;}
-
-/* FORMS */
 label.lbl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#555;margin-bottom:4px;}
 input,select,textarea{width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #e0e0e0;font-size:14px;outline:none;margin-bottom:10px;font-family:inherit;background:white;}
 input:focus,select:focus,textarea:focus{border-color:#6264A7;}
@@ -53,9 +47,6 @@ textarea{min-height:80px;resize:vertical;}
 .btn-danger{background:#ef4444;}
 .btn-orange{background:#f59e0b;}
 .btn-sm{padding:6px 12px;font-size:12px;}
-.btn-outline{background:white;border:2px solid #6264A7;color:#6264A7;}
-
-/* TASK CARDS */
 .task-card{background:white;border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:4px solid #6264A7;cursor:pointer;transition:transform .15s;}
 .task-card:hover{transform:translateX(3px);}
 .task-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;}
@@ -63,27 +54,18 @@ textarea{min-height:80px;resize:vertical;}
 .task-meta{font-size:11px;color:#aaa;margin-top:5px;}
 .badges{display:flex;gap:5px;flex-wrap:wrap;}
 .badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:700;}
-
-/* MODAL */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;}
 .modal{background:white;border-radius:14px;padding:24px;width:100%;max-width:500px;box-shadow:0 8px 32px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto;}
 .modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
 .modal-title{font-weight:700;font-size:16px;flex:1;padding-right:10px;}
 .close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;}
-
-/* NOTIF */
 .notif{position:fixed;top:16px;right:16px;padding:12px 20px;border-radius:8px;font-weight:600;font-size:13px;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2);color:white;animation:slideIn .3s ease;max-width:320px;}
 @keyframes slideIn{from{transform:translateX(60px);opacity:0;}to{transform:translateX(0);opacity:1;}}
-
-/* MISC */
-.section-title{font-weight:700;font-size:15px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.section-title{font-weight:700;font-size:15px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 .empty{text-align:center;padding:28px;color:#aaa;font-size:14px;}
 .progress-wrap{background:#f0f0f0;border-radius:6px;height:8px;overflow:hidden;margin:6px 0 10px;}
 .progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#6264A7,#22c55e);transition:width .5s;}
 .announce{background:linear-gradient(135deg,#e8f4fd,#dbeafe);border:1px solid #93c5fd;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#1e40af;}
-.shift-info{background:#f5f5ff;border-radius:8px;padding:10px 14px;font-size:12px;color:#6264A7;margin-bottom:14px;display:flex;gap:16px;flex-wrap:wrap;}
-.shift-info span{font-weight:600;}
-.divider{height:1px;background:#f0f0f0;margin:14px 0;}
 .filter-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
 .sort-btn{padding:6px 12px;border-radius:6px;border:1.5px solid #6264A7;background:white;color:#6264A7;font-size:12px;font-weight:600;cursor:pointer;}
 .sort-btn.active{background:#6264A7;color:white;}
@@ -92,19 +74,21 @@ textarea{min-height:80px;resize:vertical;}
 .mic-btn.listening{background:linear-gradient(135deg,#ef4444,#dc2626);animation:pulse 1s infinite;}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4);}50%{box-shadow:0 0 0 14px rgba(239,68,68,0);}}
 .transcript-box{background:white;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:13px;color:#444;min-height:36px;border:1.5px solid #e0e0e0;text-align:left;line-height:1.6;}
-.admin-section{background:#fff8f0;border:1px solid #fed7aa;border-radius:10px;padding:16px;margin-bottom:14px;}
-.user-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:13px;}
-.user-row:last-child{border-bottom:none;}
-@media(max-width:600px){
-  .stat-grid{grid-template-columns:repeat(2,1fr);}
-  .row2,.row3,.filter-row{grid-template-columns:1fr;}
-}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;margin-right:4px;animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+@media(max-width:600px){.stat-grid{grid-template-columns:repeat(2,1fr);}.row2,.row3,.filter-row{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
 
+<!-- LOADING -->
+<div id="loadingScreen" class="loading-screen">
+  <div class="spinner"></div>
+  <div style="font-size:16px;font-weight:600;">Connecting to database...</div>
+</div>
+
 <!-- LOGIN -->
-<div id="loginScreen" class="login-screen">
+<div id="loginScreen" class="login-screen" style="display:none">
   <div class="login-card">
     <div class="login-logo">
       <div>🔄</div>
@@ -113,10 +97,10 @@ textarea{min-height:80px;resize:vertical;}
     </div>
     <div class="login-error" id="loginError"></div>
     <label class="lbl">Email Address</label>
-    <input id="loginEmail" type="email" placeholder="yourname@reachmobile.com" style="margin-bottom:10px"/>
+    <input id="loginEmail" type="email" placeholder="yourname@reachmobile.com"/>
     <label class="lbl">Password</label>
-    <input id="loginPassword" type="password" placeholder="Enter your password" style="margin-bottom:16px"/>
-    <button class="btn btn-primary" style="width:100%;padding:12px" onclick="doLogin()">🔐 Sign In</button>
+    <input id="loginPassword" type="password" placeholder="Enter your password"/>
+    <button class="btn btn-primary" style="width:100%;padding:12px;margin-top:4px" onclick="doLogin()">🔐 Sign In</button>
     <div style="text-align:center;margin-top:12px;font-size:12px;color:#aaa;">Only @reachmobile.com accounts are allowed</div>
   </div>
 </div>
@@ -125,13 +109,13 @@ textarea{min-height:80px;resize:vertical;}
 <div id="mainApp" style="display:none">
   <div class="header">
     <div>
-      <h1>🔄 Shift Handover Board <span style="font-size:11px;opacity:.7;font-weight:400;">v2.0</span></h1>
-      <p id="headerInfo">Loading...</p>
+      <h1>🔄 Shift Handover Board <span style="font-size:11px;opacity:.7;font-weight:400">v2.0</span></h1>
+      <p id="headerInfo"><span class="sync-dot"></span>Live • Loading...</p>
     </div>
     <div class="hbtns">
       <button class="hbtn" onclick="sendTeamsNotification()">📢 Notify Teams</button>
       <button class="hbtn white" onclick="downloadCSV()">⬇ Excel</button>
-      <button class="hbtn" id="userBtn" onclick="showView('profile')">👤</button>
+      <button class="hbtn" id="userBtn">👤</button>
       <button class="hbtn red" onclick="doLogout()">Sign Out</button>
     </div>
   </div>
@@ -148,11 +132,9 @@ textarea{min-height:80px;resize:vertical;}
     <div id="view-log" style="display:none"></div>
     <div id="view-summary" style="display:none"></div>
     <div id="view-admin" style="display:none"></div>
-    <div id="view-profile" style="display:none"></div>
   </div>
 </div>
 
-<!-- MODAL -->
 <div class="overlay" id="modal" style="display:none" onclick="closeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-header">
@@ -165,53 +147,53 @@ textarea{min-height:80px;resize:vertical;}
 <div class="notif" id="notif" style="display:none"></div>
 
 <script>
-// ─── STATIC USER LIST ───────────────────────────────────────────────
-// Admin: update this list to add/remove users
-const USERS = [
-  {id:'u1', name:'Admin User',      email:'admin@reachmobile.com',    password:'Admin@123',   role:'Admin',       shift:'All',       active:true},
-  {id:'u2', name:'Ravi Kumar',      email:'ravi@reachmobile.com',     password:'Ravi@123',    role:'Supervisor',  shift:'Morning',   active:true},
-  {id:'u3', name:'Priya Sharma',    email:'priya@reachmobile.com',    password:'Priya@123',   role:'Agent',       shift:'Morning',   active:true},
-  {id:'u4', name:'Arun Mehta',      email:'arun@reachmobile.com',     password:'Arun@123',    role:'Agent',       shift:'Afternoon', active:true},
-  {id:'u5', name:'Sneha Reddy',     email:'sneha@reachmobile.com',    password:'Sneha@123',   role:'Supervisor',  shift:'Afternoon', active:true},
-  {id:'u6', name:'Kiran Patel',     email:'kiran@reachmobile.com',    password:'Kiran@123',   role:'Agent',       shift:'Night',     active:true},
-  {id:'u7', name:'Divya Thomas',    email:'divya@reachmobile.com',    password:'Divya@123',   role:'Agent',       shift:'Night',     active:true},
-];
+// ── FIREBASE CONFIG ──────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyBHfudEqWBBObPB6yJEzqhSo1lo4av10TQ",
+  authDomain: "shift-handover-bd0f9.firebaseapp.com",
+  databaseURL: "https://shift-handover-bd0f9-default-rtdb.firebaseio.com",
+  projectId: "shift-handover-bd0f9",
+  storageBucket: "shift-handover-bd0f9.firebasestorage.app",
+  messagingSenderId: "219517214969",
+  appId: "1:219517214969:web:96d0390f2df83678838228"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-// ─── SHIFT CONFIG (IST + EST) ────────────────────────────────────────
-const SHIFTS_CONFIG = {
-  Morning:   {ist:'6:00 AM – 3:00 PM',   est:'7:30 PM – 4:30 AM', notifyIST:'6:15 AM',  notifyEST:'7:45 PM'},
-  Afternoon: {ist:'2:00 PM – 11:00 PM',  est:'3:30 AM – 1:30 PM', notifyIST:'2:15 PM',  notifyEST:'3:45 AM'},
-  Night:     {ist:'9:00 PM – 6:00 AM',   est:'10:30 AM – 8:30 PM',notifyIST:'9:15 PM',  notifyEST:'10:45 AM'},
+// ── CONSTANTS ────────────────────────────────────────────────────────
+const SHIFTS     = ['All','Morning','Afternoon','Night'];
+const PRIORITIES = ['High','Medium','Low'];
+const STATUSES   = ['Open','In Progress','Closed'];
+const ITEM_TYPES = ['Task','Email','Chat','Ticket','Note'];
+const P_COLOR    = {High:'#ef4444',Medium:'#f59e0b',Low:'#22c55e'};
+const S_COLOR    = {Open:'#f59e0b','In Progress':'#3b82f6',Closed:'#6b7280'};
+const P_ICON     = {High:'🔴',Medium:'🟡',Low:'🟢'};
+const S_ICON     = {Open:'📬','In Progress':'🔄',Closed:'✅'};
+const T_ICON     = {Task:'📋',Email:'📧',Chat:'💬',Ticket:'🎫',Note:'📝'};
+const ROLE_COLOR = {Admin:'#7c3aed',Supervisor:'#0078d4',Agent:'#22c55e'};
+let SHIFTS_CONFIG = {
+  Morning:   {ist:'6:00 AM – 3:00 PM',   est:'7:30 PM – 4:30 AM',  notifyIST:'6:15 AM',  notifyEST:'7:45 PM'},
+  Afternoon: {ist:'2:00 PM – 11:00 PM',  est:'3:30 AM – 1:30 PM',  notifyIST:'2:15 PM',  notifyEST:'3:45 AM'},
+  Night:     {ist:'9:00 PM – 6:00 AM',   est:'10:30 AM – 8:30 PM', notifyIST:'9:15 PM',  notifyEST:'10:45 AM'},
 };
 
-const SHIFTS    = ['All','Morning','Afternoon','Night'];
-const PRIORITIES= ['High','Medium','Low'];
-const STATUSES  = ['Open','In Progress','Closed'];
-const ITEM_TYPES= ['Task','Email','Chat','Ticket','Note'];
-const P_COLOR   = {High:'#ef4444',Medium:'#f59e0b',Low:'#22c55e'};
-const S_COLOR   = {Open:'#f59e0b','In Progress':'#3b82f6',Closed:'#6b7280'};
-const P_ICON    = {High:'🔴',Medium:'🟡',Low:'🟢'};
-const S_ICON    = {Open:'📬','In Progress':'🔄',Closed:'✅'};
-const T_ICON    = {Task:'📋',Email:'📧',Chat:'💬',Ticket:'🎫',Note:'📝'};
-const ROLE_COLOR= {Admin:'#7c3aed',Supervisor:'#0078d4',Agent:'#22c55e'};
-
-let tasks   = JSON.parse(localStorage.getItem('ho_tasks') || '[]');
-let curUser = JSON.parse(localStorage.getItem('ho_user')  || 'null');
+let tasks   = {};
+let users   = {};
+let curUser = null;
 let curView = 'dashboard';
 let sortBy  = 'priority';
 let recognition = null;
 let isListening = false;
 
-// ─── HELPERS ─────────────────────────────────────────────────────────
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
-function save(){localStorage.setItem('ho_tasks',JSON.stringify(tasks));}
+// ── HELPERS ──────────────────────────────────────────────────────────
+function uid(){return db.ref().push().key;}
 function fmt(d){return d?new Date(d).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—';}
 function esc(s){return s?(s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''; }
 function badge(t,c){return `<span class="badge" style="background:${c}22;color:${c}">${t}</span>`;}
 function getCurrentShift(){
   const h=new Date().getHours();
-  if(h>=6&&h<14) return 'Morning';
-  if(h>=14&&h<21) return 'Afternoon';
+  if(h>=6&&h<14)return 'Morning';
+  if(h>=14&&h<21)return 'Afternoon';
   return 'Night';
 }
 function notify(msg,type='success'){
@@ -221,45 +203,89 @@ function notify(msg,type='success'){
   n.style.display='block';
   setTimeout(()=>n.style.display='none',3500);
 }
-function sortTasks(arr){
+function taskArr(){
   const pOrder={High:0,Medium:1,Low:2};
   const sOrder={Open:0,'In Progress':1,Closed:2};
-  return [...arr].sort((a,b)=>{
-    if(sortBy==='priority') return (pOrder[a.priority]??1)-(pOrder[b.priority]??1)||sOrder[a.status]-sOrder[b.status];
-    if(sortBy==='status')   return sOrder[a.status]-sOrder[b.status];
-    if(sortBy==='newest')   return new Date(b.date)-new Date(a.date);
-    return 0;
+  let arr=Object.values(tasks||{});
+  if(sortBy==='priority') arr.sort((a,b)=>(pOrder[a.priority]??1)-(pOrder[b.priority]??1)||sOrder[a.status]-sOrder[b.status]);
+  else if(sortBy==='status') arr.sort((a,b)=>sOrder[a.status]-sOrder[b.status]);
+  else arr.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  return arr;
+}
+
+// ── FIREBASE LISTENERS ───────────────────────────────────────────────
+function startListeners(){
+  // Tasks — real-time
+  db.ref('tasks').on('value', snap=>{
+    tasks = snap.val()||{};
+    render(curView);
+    updateHeader();
+  });
+  // Shifts config
+  db.ref('config/shifts').on('value', snap=>{
+    if(snap.val()) Object.assign(SHIFTS_CONFIG, snap.val());
   });
 }
 
-// ─── AUTH ─────────────────────────────────────────────────────────────
-function doLogin(){
-  const email   = document.getElementById('loginEmail').value.trim().toLowerCase();
-  const password= document.getElementById('loginPassword').value;
-  const errEl   = document.getElementById('loginError');
-  errEl.style.display='none';
+// ── INIT ─────────────────────────────────────────────────────────────
+async function init(){
+  // Load users from Firebase once
+  const snap = await db.ref('users').get();
+  if(!snap.val()){
+    // First run — seed default users
+    await seedDefaultUsers();
+  } else {
+    users = snap.val();
+  }
+  document.getElementById('loadingScreen').style.display='none';
+  // Check saved session
+  const saved = sessionStorage.getItem('ho_user');
+  if(saved){
+    curUser=JSON.parse(saved);
+    bootApp();
+  } else {
+    document.getElementById('loginScreen').style.display='flex';
+  }
+}
 
+async function seedDefaultUsers(){
+  const defaults = {
+    u1:{id:'u1',name:'Admin User',    email:'admin@reachmobile.com', password:'Admin@123',  role:'Admin',      shift:'All',       active:true},
+    u2:{id:'u2',name:'Ravi Kumar',    email:'ravi@reachmobile.com',  password:'Ravi@123',   role:'Supervisor', shift:'Morning',   active:true},
+    u3:{id:'u3',name:'Priya Sharma',  email:'priya@reachmobile.com', password:'Priya@123',  role:'Agent',      shift:'Morning',   active:true},
+    u4:{id:'u4',name:'Arun Mehta',    email:'arun@reachmobile.com',  password:'Arun@123',   role:'Agent',      shift:'Afternoon', active:true},
+    u5:{id:'u5',name:'Sneha Reddy',   email:'sneha@reachmobile.com', password:'Sneha@123',  role:'Supervisor', shift:'Afternoon', active:true},
+    u6:{id:'u6',name:'Kiran Patel',   email:'kiran@reachmobile.com', password:'Kiran@123',  role:'Agent',      shift:'Night',     active:true},
+    u7:{id:'u7',name:'Divya Thomas',  email:'divya@reachmobile.com', password:'Divya@123',  role:'Agent',      shift:'Night',     active:true},
+  };
+  await db.ref('users').set(defaults);
+  users = defaults;
+}
+
+// ── AUTH ─────────────────────────────────────────────────────────────
+async function doLogin(){
+  const email    = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value;
+  const errEl    = document.getElementById('loginError');
+  errEl.style.display='none';
   if(!email.endsWith('@reachmobile.com')){
-    errEl.textContent='❌ Only @reachmobile.com email addresses are allowed.';
-    errEl.style.display='block'; return;
+    errEl.textContent='❌ Only @reachmobile.com accounts are allowed.';
+    errEl.style.display='block';return;
   }
-  const user = getUsers().find(u=>u.email.toLowerCase()===email && u.password===password);
-  if(!user){
-    errEl.textContent='❌ Invalid email or password. Please try again.';
-    errEl.style.display='block'; return;
-  }
-  if(!user.active){
-    errEl.textContent='❌ Your account is inactive. Contact admin.';
-    errEl.style.display='block'; return;
-  }
+  // Reload users fresh from Firebase
+  const snap = await db.ref('users').get();
+  users = snap.val()||{};
+  const user = Object.values(users).find(u=>u.email.toLowerCase()===email && u.password===password);
+  if(!user){errEl.textContent='❌ Invalid email or password.';errEl.style.display='block';return;}
+  if(!user.active){errEl.textContent='❌ Account inactive. Contact admin.';errEl.style.display='block';return;}
   curUser=user;
-  localStorage.setItem('ho_user',JSON.stringify(user));
+  sessionStorage.setItem('ho_user',JSON.stringify(user));
   bootApp();
 }
 
 function doLogout(){
   if(!confirm('Sign out?'))return;
-  localStorage.removeItem('ho_user');
+  sessionStorage.removeItem('ho_user');
   curUser=null;
   document.getElementById('mainApp').style.display='none';
   document.getElementById('loginScreen').style.display='flex';
@@ -267,131 +293,104 @@ function doLogout(){
   document.getElementById('loginPassword').value='';
 }
 
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none')doLogin();});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none')doLogin();
+});
 
-// ─── BOOT ─────────────────────────────────────────────────────────────
 function bootApp(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('mainApp').style.display='block';
   if(curUser.role==='Admin') document.getElementById('adminTab').style.display='inline-block';
   document.getElementById('userBtn').textContent='👤 '+curUser.name.split(' ')[0];
-  updateHeader();
-  if(tasks.length===0) seedSampleTasks();
-  renderDashboard();
+  startListeners();
 }
 
 function updateHeader(){
+  if(!curUser)return;
   const sh=getCurrentShift();
-  const cfg=SHIFTS_CONFIG[sh];
-  document.getElementById('headerInfo').textContent=
-    `${curUser.name} • ${curUser.role} • ${sh} Shift | IST: ${cfg.ist} | EST: ${cfg.est}`;
+  const cfg=SHIFTS_CONFIG[sh]||{};
+  const open=Object.values(tasks||{}).filter(t=>t.status==='Open').length;
+  document.getElementById('headerInfo').innerHTML=
+    `<span class="sync-dot"></span>Live • ${curUser.name} • ${sh} Shift | IST: ${cfg.ist||''} | EST: ${cfg.est||''} | Open: ${open}`;
 }
 
-function seedSampleTasks(){
-  tasks=[
-    {id:uid(),title:'Database backup failed',description:'Scheduled backup at 2PM failed. Check logs and retry.',type:'Task',shift:'Morning',priority:'High',status:'Open',submittedBy:'Ravi Kumar',submittedByEmail:'ravi@reachmobile.com',assignedTo:'',date:new Date(Date.now()-3600000).toISOString(),dateClosed:''},
-    {id:uid(),title:'Customer email thread #4521',description:'Customer reported login issue over email. Needs follow-up.',type:'Email',shift:'Morning',priority:'Medium',status:'In Progress',submittedBy:'Priya Sharma',submittedByEmail:'priya@reachmobile.com',assignedTo:'Arun Mehta',date:new Date(Date.now()-7200000).toISOString(),dateClosed:''},
-    {id:uid(),title:'Server room AC alarm',description:'Minor temperature fluctuation. Monitoring required.',type:'Task',shift:'Afternoon',priority:'Low',status:'Open',submittedBy:'Arun Mehta',submittedByEmail:'arun@reachmobile.com',assignedTo:'',date:new Date(Date.now()-1800000).toISOString(),dateClosed:''},
-    {id:uid(),title:'Teams chat follow-up with vendor',description:'Vendor asked about API integration timeline in Teams chat.',type:'Chat',shift:'Afternoon',priority:'Medium',status:'Open',submittedBy:'Sneha Reddy',submittedByEmail:'sneha@reachmobile.com',assignedTo:'',date:new Date(Date.now()-900000).toISOString(),dateClosed:''},
-    {id:uid(),title:'Ticket #TK-882 escalated',description:'Priority 1 ticket escalated by customer. Needs immediate attention.',type:'Ticket',shift:'Night',priority:'High',status:'Open',submittedBy:'Kiran Patel',submittedByEmail:'kiran@reachmobile.com',assignedTo:'',date:new Date(Date.now()-600000).toISOString(),dateClosed:''},
-  ];
-  save();
-}
-
-// ─── VIEW ROUTER ──────────────────────────────────────────────────────
+// ── VIEW ROUTER ──────────────────────────────────────────────────────
 function showView(v,btn){
   curView=v;
-  ['dashboard','tasks','log','summary','admin','profile'].forEach(x=>{
+  ['dashboard','tasks','log','summary','admin'].forEach(x=>{
     document.getElementById('view-'+x).style.display=x===v?'block':'none';
   });
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  else{
-    const map={dashboard:0,tasks:1,log:2,summary:3,admin:4};
-    const btns=document.querySelectorAll('nav button');
-    if(map[v]!==undefined && btns[map[v]]) btns[map[v]].classList.add('active');
-  }
+  if(btn)btn.classList.add('active');
+  else{const btns=document.querySelectorAll('nav button');const idx={dashboard:0,tasks:1,log:2,summary:3,admin:4};if(btns[idx[v]])btns[idx[v]].classList.add('active');}
   render(v);
 }
 function render(v){
-  if(v==='dashboard') renderDashboard();
-  if(v==='tasks')     renderTasks();
-  if(v==='log')       renderLog();
-  if(v==='summary')   renderSummary();
-  if(v==='admin')     renderAdmin();
-  if(v==='profile')   renderProfile();
+  if(v==='dashboard')renderDashboard();
+  if(v==='tasks')renderTasks();
+  if(v==='log')renderLog();
+  if(v==='summary')renderSummary();
+  if(v==='admin')renderAdmin();
 }
 
-// ─── DASHBOARD ───────────────────────────────────────────────────────
+// ── DASHBOARD ────────────────────────────────────────────────────────
 function renderDashboard(){
+  if(!curUser)return;
   const sh=getCurrentShift();
-  const cfg=SHIFTS_CONFIG[sh];
-  const open=tasks.filter(t=>t.status==='Open');
-  const ip=tasks.filter(t=>t.status==='In Progress');
-  const closed=tasks.filter(t=>t.status==='Closed');
-  const shiftOpen=sortTasks(tasks.filter(t=>(t.shift===sh||t.shift==='All')&&t.status!=='Closed'));
-
+  const cfg=SHIFTS_CONFIG[sh]||{};
+  const all=taskArr();
+  const open=all.filter(t=>t.status==='Open');
+  const ip=all.filter(t=>t.status==='In Progress');
+  const closed=all.filter(t=>t.status==='Closed');
+  const shiftActive=all.filter(t=>(t.shift===sh||t.shift==='All')&&t.status!=='Closed');
   document.getElementById('view-dashboard').innerHTML=`
-  <div class="announce"><strong>👋 Welcome, ${esc(curUser.name)}! You are on ${sh} Shift</strong>
-  IST: ${cfg.ist} | EST: ${cfg.est} | Notification at: ${cfg.notifyIST} IST / ${cfg.notifyEST} EST</div>
+  <div class="announce"><strong>👋 Welcome, ${esc(curUser.name)}!</strong>
+  ${sh} Shift | IST: ${cfg.ist||''} | EST: ${cfg.est||''} | Notify: ${cfg.notifyIST||''} IST</div>
   <div class="stat-grid">
-    ${[['Total',tasks.length,'#6264A7'],['Open',open.length,'#f59e0b'],['In Progress',ip.length,'#3b82f6'],['Closed',closed.length,'#6b7280']].map(([l,v,c])=>`
-    <div class="stat-card" style="border-top:4px solid ${c}">
-      <div class="stat-num" style="color:${c}">${v}</div>
-      <div class="stat-label">${l}</div>
-    </div>`).join('')}
+    ${[['Total',all.length,'#6264A7'],['Open',open.length,'#f59e0b'],['In Progress',ip.length,'#3b82f6'],['Closed',closed.length,'#6b7280']].map(([l,v,c])=>`
+    <div class="stat-card" style="border-top:4px solid ${c}"><div class="stat-num" style="color:${c}">${v}</div><div class="stat-label">${l}</div></div>`).join('')}
   </div>
   <div class="card">
-    <div class="section-title">
-      ⚠️ ${sh} Shift — Active Items (${shiftOpen.length})
-      <div style="display:flex;gap:6px">
+    <div class="section-title">⚠️ ${sh} Shift — Active Items (${shiftActive.length})
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
         ${['priority','newest','status'].map(s=>`<button class="sort-btn${sortBy===s?' active':''}" onclick="sortBy='${s}';renderDashboard()">${{priority:'🎯 Priority',newest:'🕐 Newest',status:'📊 Status'}[s]}</button>`).join('')}
       </div>
     </div>
-    ${shiftOpen.length===0?'<div class="empty">✅ No active items for this shift!</div>':shiftOpen.map(t=>taskCardHTML(t)).join('')}
+    ${shiftActive.length===0?'<div class="empty">✅ No active items for this shift!</div>':shiftActive.map(t=>taskCardHTML(t)).join('')}
   </div>
   <div class="card">
-    <div class="section-title">📋 All Recent Items
+    <div class="section-title">📋 Recent Items
       <button class="btn btn-primary btn-sm" onclick="showView('tasks')">View All →</button>
     </div>
-    ${sortTasks(tasks).slice(0,5).map(t=>taskCardHTML(t)).join('')}
+    ${all.slice(0,5).map(t=>taskCardHTML(t)).join('')}
   </div>`;
 }
 
-// ─── TASK CARD ────────────────────────────────────────────────────────
 function taskCardHTML(t){
-  return `<div class="task-card" style="border-left-color:${P_COLOR[t.priority]}" onclick="openTask('${t.id}')">
+  return `<div class="task-card" style="border-left-color:${P_COLOR[t.priority]||'#6264A7'}" onclick="openTask('${t.id}')">
     <div class="task-top">
       <div class="task-title">${T_ICON[t.type]||'📋'} ${esc(t.title)}</div>
       <div class="badges">
-        ${badge(P_ICON[t.priority]+' '+t.priority, P_COLOR[t.priority])}
-        ${badge(S_ICON[t.status]+' '+t.status, S_COLOR[t.status])}
+        ${badge(P_ICON[t.priority]+' '+t.priority,P_COLOR[t.priority])}
+        ${badge(S_ICON[t.status]+' '+t.status,S_COLOR[t.status])}
         ${badge(t.type,'#6264A7')}
         ${badge(t.shift,'#0891b2')}
       </div>
     </div>
     ${t.description?`<div style="font-size:12px;color:#666;margin:5px 0 2px">${esc(t.description).substring(0,85)}${t.description.length>85?'...':''}</div>`:''}
-    <div class="task-meta">
-      By ${esc(t.submittedBy)} • ${fmt(t.date)}
-      ${t.assignedTo?` • 🔄 Assigned: ${esc(t.assignedTo)}`:''}
-    </div>
+    <div class="task-meta">By ${esc(t.submittedBy)} • ${fmt(t.date)}${t.assignedTo?` • 🔄 ${esc(t.assignedTo)}`:''}</div>
   </div>`;
 }
 
-// ─── ALL TASKS ────────────────────────────────────────────────────────
+// ── ALL TASKS ────────────────────────────────────────────────────────
 function renderTasks(){
   const sf  = document.getElementById('f-shift')   ?.value||'All';
   const stf = document.getElementById('f-status')  ?.value||'All';
   const pf  = document.getElementById('f-priority')?.value||'All';
   const tf  = document.getElementById('f-type')    ?.value||'All';
-  let filtered=tasks.filter(t=>
-    (sf==='All'||t.shift===sf)&&
-    (stf==='All'||t.status===stf)&&
-    (pf==='All'||t.priority===pf)&&
-    (tf==='All'||t.type===tf)
-  );
-  filtered=sortTasks(filtered);
-
+  const filtered=taskArr().filter(t=>
+    (sf==='All'||t.shift===sf)&&(stf==='All'||t.status===stf)&&
+    (pf==='All'||t.priority===pf)&&(tf==='All'||t.type===tf));
   document.getElementById('view-tasks').innerHTML=`
   <div class="card">
     <div class="section-title">🔍 Filter & Sort
@@ -400,21 +399,17 @@ function renderTasks(){
       </div>
     </div>
     <div class="filter-row">
-      <div><label class="lbl">Shift</label>
-        <select id="f-shift" onchange="renderTasks()"><option>All</option>${SHIFTS.map(s=>`<option${sf===s?' selected':''}>${s}</option>`).join('')}</select></div>
-      <div><label class="lbl">Status</label>
-        <select id="f-status" onchange="renderTasks()"><option>All</option>${STATUSES.map(s=>`<option${stf===s?' selected':''}>${s}</option>`).join('')}</select></div>
-      <div><label class="lbl">Priority</label>
-        <select id="f-priority" onchange="renderTasks()"><option>All</option>${PRIORITIES.map(p=>`<option${pf===p?' selected':''}>${p}</option>`).join('')}</select></div>
-      <div><label class="lbl">Type</label>
-        <select id="f-type" onchange="renderTasks()"><option>All</option>${ITEM_TYPES.map(t=>`<option${tf===t?' selected':''}>${t}</option>`).join('')}</select></div>
+      <div><label class="lbl">Shift</label><select id="f-shift" onchange="renderTasks()"><option>All</option>${SHIFTS.map(s=>`<option${sf===s?' selected':''}>${s}</option>`).join('')}</select></div>
+      <div><label class="lbl">Status</label><select id="f-status" onchange="renderTasks()"><option>All</option>${STATUSES.map(s=>`<option${stf===s?' selected':''}>${s}</option>`).join('')}</select></div>
+      <div><label class="lbl">Priority</label><select id="f-priority" onchange="renderTasks()"><option>All</option>${PRIORITIES.map(p=>`<option${pf===p?' selected':''}>${p}</option>`).join('')}</select></div>
+      <div><label class="lbl">Type</label><select id="f-type" onchange="renderTasks()"><option>All</option>${ITEM_TYPES.map(t=>`<option${tf===t?' selected':''}>${t}</option>`).join('')}</select></div>
     </div>
   </div>
   <div style="font-size:13px;color:#888;margin-bottom:8px">${filtered.length} item(s) found</div>
   ${filtered.length===0?'<div class="card empty">No items match this filter.</div>':filtered.map(t=>taskCardHTML(t)).join('')}`;
 }
 
-// ─── LOG ITEM ─────────────────────────────────────────────────────────
+// ── LOG ITEM ─────────────────────────────────────────────────────────
 function renderLog(){
   document.getElementById('view-log').innerHTML=`
   <div class="card">
@@ -426,22 +421,17 @@ function renderLog(){
       <div class="transcript-box" id="transcriptBox">Your speech will appear here...</div>
     </div>
     <div class="row2">
-      <div><label class="lbl">Your Name</label>
-        <input id="f-name" value="${esc(curUser.name)}" readonly style="background:#f5f5f5"/></div>
-      <div><label class="lbl">Item Type *</label>
-        <select id="f-type-log">${ITEM_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></div>
+      <div><label class="lbl">Your Name</label><input id="f-name" value="${esc(curUser.name)}" readonly style="background:#f5f5f5"/></div>
+      <div><label class="lbl">Item Type *</label><select id="f-type-log">${ITEM_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></div>
     </div>
     <label class="lbl">Title *</label>
     <input id="f-title" placeholder="e.g. Server backup failed"/>
     <label class="lbl">Description / Notes</label>
     <textarea id="f-desc" placeholder="Describe what's pending and context for next shift..."></textarea>
     <div class="row3">
-      <div><label class="lbl">Shift</label>
-        <select id="f-shift-log">${SHIFTS.map(s=>`<option${s===curUser.shift?' selected':''}>${s}</option>`).join('')}</select></div>
-      <div><label class="lbl">Priority</label>
-        <select id="f-pri">${PRIORITIES.map(p=>`<option${p==='Medium'?' selected':''}>${p}</option>`).join('')}</select></div>
-      <div><label class="lbl">Status</label>
-        <select id="f-status-log"><option>Open</option></select></div>
+      <div><label class="lbl">Shift</label><select id="f-shift-log">${SHIFTS.map(s=>`<option${s===curUser.shift?' selected':''}>${s}</option>`).join('')}</select></div>
+      <div><label class="lbl">Priority</label><select id="f-pri">${PRIORITIES.map(p=>`<option${p==='Medium'?' selected':''}>${p}</option>`).join('')}</select></div>
+      <div><label class="lbl">Status</label><select id="f-status-log"><option>Open</option></select></div>
     </div>
     <button class="btn btn-primary" onclick="submitTask()">✅ Submit Item</button>
   </div>`;
@@ -450,9 +440,8 @@ function renderLog(){
 function submitTask(){
   const title=document.getElementById('f-title').value.trim();
   if(!title){notify('Please fill the Title.','error');return;}
-  tasks.unshift({
-    id:uid(),
-    title,
+  const newTask={
+    id:uid(),title,
     description:document.getElementById('f-desc').value.trim(),
     type:document.getElementById('f-type-log').value,
     shift:document.getElementById('f-shift-log').value,
@@ -460,16 +449,14 @@ function submitTask(){
     status:'Open',
     submittedBy:curUser.name,
     submittedByEmail:curUser.email,
-    assignedTo:'',
-    date:new Date().toISOString(),
-    dateClosed:''
-  });
-  save();
-  notify('✅ Item logged successfully!');
+    assignedTo:'',date:new Date().toISOString(),dateClosed:''
+  };
+  db.ref('tasks/'+newTask.id).set(newTask);
+  notify('✅ Item logged — visible to all team members!');
   showView('dashboard');
 }
 
-// ─── VOICE ────────────────────────────────────────────────────────────
+// ── VOICE ────────────────────────────────────────────────────────────
 function toggleVoice(){isListening?stopVoice():startVoice();}
 function startVoice(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -479,7 +466,6 @@ function startVoice(){
   document.getElementById('micBtn').classList.add('listening');
   document.getElementById('micBtn').textContent='⏹';
   document.getElementById('aiStatus').textContent='🎙️ Listening...';
-  document.getElementById('transcriptBox').textContent='';
   recognition.onresult=e=>{
     let interim='',final='';
     for(let i=e.resultIndex;i<e.results.length;i++){
@@ -501,17 +487,17 @@ function stopVoice(){
 function processVoice(t){
   const low=t.toLowerCase();
   let priority='Medium';
-  if(/urgent|critical|important|high|emergency|asap|failed|down|broken|severe/i.test(low))priority='High';
-  else if(/minor|small|low|later|can wait|not urgent|whenever/i.test(low))priority='Low';
+  if(/urgent|critical|important|high|emergency|asap|failed|down|broken/i.test(low))priority='High';
+  else if(/minor|small|low|later|can wait|not urgent/i.test(low))priority='Low';
   let shift='';
-  if(/morning|first shift/i.test(low))shift='Morning';
-  else if(/afternoon|second shift/i.test(low))shift='Afternoon';
-  else if(/night|third shift|overnight/i.test(low))shift='Night';
+  if(/morning/i.test(low))shift='Morning';
+  else if(/afternoon/i.test(low))shift='Afternoon';
+  else if(/night/i.test(low))shift='Night';
   let type='Task';
   if(/email/i.test(low))type='Email';
-  else if(/chat|teams|message/i.test(low))type='Chat';
+  else if(/chat|teams/i.test(low))type='Chat';
   else if(/ticket|incident/i.test(low))type='Ticket';
-  else if(/note|fyi|info/i.test(low))type='Note';
+  else if(/note|fyi/i.test(low))type='Note';
   const words=t.split(' ');
   let title=words.slice(0,8).join(' ');
   title=title.charAt(0).toUpperCase()+title.slice(1);
@@ -523,26 +509,25 @@ function processVoice(t){
   document.getElementById('aiStatus').textContent='✅ Form filled from speech!';
 }
 
-// ─── TASK DETAIL MODAL ────────────────────────────────────────────────
+// ── TASK MODAL ───────────────────────────────────────────────────────
 function openTask(id){
-  const t=tasks.find(x=>x.id===id);if(!t)return;
-  const canClose=t.status==='In Progress'&&(t.assignedTo===curUser.name||curUser.role==='Admin'||curUser.role==='Supervisor');
+  const t=Object.values(tasks).find(x=>x.id===id);if(!t)return;
   const canTake=t.status==='Open';
+  const canClose=t.status==='In Progress'&&(t.assignedTo===curUser.name||curUser.role==='Admin'||curUser.role==='Supervisor');
   const cfg=SHIFTS_CONFIG[t.shift]||{};
-  document.getElementById('modalTitle').textContent=T_ICON[t.type]+' '+t.title;
+  document.getElementById('modalTitle').textContent=(T_ICON[t.type]||'📋')+' '+t.title;
   document.getElementById('modalBody').innerHTML=`
     <div class="badges" style="margin-bottom:12px">
       ${badge(P_ICON[t.priority]+' '+t.priority,P_COLOR[t.priority])}
       ${badge(S_ICON[t.status]+' '+t.status,S_COLOR[t.status])}
-      ${badge(t.type,'#6264A7')}
-      ${badge(t.shift+' Shift','#0891b2')}
+      ${badge(t.type,'#6264A7')}${badge(t.shift,'#0891b2')}
     </div>
-    ${cfg.ist?`<div style="font-size:12px;color:#888;margin-bottom:10px">⏰ IST: ${cfg.ist} | EST: ${cfg.est}</div>`:''}
+    ${cfg.ist?`<div style="font-size:12px;color:#888;margin-bottom:8px">⏰ IST: ${cfg.ist} | EST: ${cfg.est}</div>`:''}
     ${t.description?`<div style="font-size:13px;color:#555;background:#f7f7f7;padding:12px;border-radius:8px;margin-bottom:12px;line-height:1.6">${esc(t.description)}</div>`:''}
-    <div style="font-size:12px;color:#888;margin-bottom:6px">📤 Logged by <b>${esc(t.submittedBy)}</b> on ${fmt(t.date)}</div>
-    ${t.assignedTo?`<div style="font-size:12px;color:#3b82f6;margin-bottom:12px">🔄 Assigned to: <b>${esc(t.assignedTo)}</b></div>`:''}
-    ${t.dateClosed?`<div style="font-size:12px;color:#6b7280;margin-bottom:12px">✅ Closed on: ${fmt(t.dateClosed)}</div>`:''}
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+    <div style="font-size:12px;color:#888;margin-bottom:6px">📤 By <b>${esc(t.submittedBy)}</b> • ${fmt(t.date)}</div>
+    ${t.assignedTo?`<div style="font-size:12px;color:#3b82f6;margin-bottom:10px">🔄 Assigned to: <b>${esc(t.assignedTo)}</b></div>`:''}
+    ${t.dateClosed?`<div style="font-size:12px;color:#6b7280;margin-bottom:10px">✅ Closed: ${fmt(t.dateClosed)}</div>`:''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
       ${canTake?`<button class="btn btn-orange" onclick="takeTask('${id}')">🙋 Take This Task</button>`:''}
       ${canClose?`<button class="btn btn-success" onclick="closeTask('${id}')">✅ Mark as Closed</button>`:''}
       ${curUser.role==='Admin'?`<button class="btn btn-danger btn-sm" onclick="deleteTask('${id}')">🗑 Delete</button>`:''}
@@ -551,104 +536,86 @@ function openTask(id){
 }
 
 function takeTask(id){
-  tasks=tasks.map(t=>t.id===id?{...t,status:'In Progress',assignedTo:curUser.name}:t);
-  save();notify(`✅ You took ownership of this task!`);
-  openTask(id);render(curView);
+  db.ref('tasks/'+id).update({status:'In Progress',assignedTo:curUser.name});
+  notify('✅ You took ownership!');openTask(id);
 }
 function closeTask(id){
-  tasks=tasks.map(t=>t.id===id?{...t,status:'Closed',dateClosed:new Date().toISOString()}:t);
-  save();notify('✅ Task closed successfully!');
+  db.ref('tasks/'+id).update({status:'Closed',dateClosed:new Date().toISOString()});
+  notify('✅ Task closed!');
   document.getElementById('modal').style.display='none';
-  render(curView);
 }
 function deleteTask(id){
   if(!confirm('Delete this item?'))return;
-  tasks=tasks.filter(t=>t.id!==id);save();
+  db.ref('tasks/'+id).remove();
   document.getElementById('modal').style.display='none';
-  notify('Item deleted.');render(curView);
+  notify('Item deleted.');
 }
 function closeModal(e){if(e.target.id==='modal')document.getElementById('modal').style.display='none';}
 
-// ─── SUMMARY ─────────────────────────────────────────────────────────
+// ── SUMMARY ──────────────────────────────────────────────────────────
 function renderSummary(){
+  const all=taskArr();
   let html='<div class="card"><div class="section-title">📈 Shift-wise Summary</div>';
   ['Morning','Afternoon','Night'].forEach(sh=>{
-    const cfg=SHIFTS_CONFIG[sh];
-    const st=tasks.filter(t=>t.shift===sh||t.shift==='All');
+    const cfg=SHIFTS_CONFIG[sh]||{};
+    const st=all.filter(t=>t.shift===sh||t.shift==='All');
     const closed=st.filter(t=>t.status==='Closed').length;
     const pct=st.length?Math.round(closed/st.length*100):0;
     html+=`<div style="margin-bottom:18px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:2px">
-        <b>${sh} Shift</b>
-        <span style="font-size:11px;color:#888">IST: ${cfg.ist} | EST: ${cfg.est}</span>
-      </div>
-      <div style="font-size:11px;color:#aaa;margin-bottom:4px">Notify: ${cfg.notifyIST} IST / ${cfg.notifyEST} EST</div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:2px"><b>${sh} Shift</b>
+        <span style="font-size:11px;color:#888">IST: ${cfg.ist||''} | EST: ${cfg.est||''}</span></div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:4px">Notify: ${cfg.notifyIST||''} IST / ${cfg.notifyEST||''} EST</div>
       <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%"></div></div>
       <div class="badges">${STATUSES.map(s=>{const c=st.filter(t=>t.status===s).length;return badge(S_ICON[s]+' '+s+': '+c,S_COLOR[s]);}).join('')}</div>
     </div>`;
   });
   html+='</div>';
-
-  // High priority open
-  const highOpen=sortTasks(tasks.filter(t=>t.priority==='High'&&t.status!=='Closed'));
-  html+=`<div class="card"><div class="section-title">🔴 High Priority — Open & In Progress (${highOpen.length})</div>
+  const highOpen=taskArr().filter(t=>t.priority==='High'&&t.status!=='Closed');
+  html+=`<div class="card"><div class="section-title">🔴 High Priority Active (${highOpen.length})</div>
     ${highOpen.length===0?'<div class="empty">✅ No high priority active items!</div>':highOpen.map(t=>taskCardHTML(t)).join('')}
   </div>`;
-
-  // By type
-  html+='<div class="card"><div class="section-title">📊 Items by Type</div><div class="badges" style="gap:10px">';
-  ITEM_TYPES.forEach(tp=>{
-    const c=tasks.filter(t=>t.type===tp).length;
-    html+=badge(T_ICON[tp]+' '+tp+': '+c,'#6264A7');
-  });
-  html+='</div></div>';
   document.getElementById('view-summary').innerHTML=html;
 }
 
-// ─── ADMIN PANEL ─────────────────────────────────────────────────────
-let adminUsers = JSON.parse(localStorage.getItem('ho_users') || 'null') || USERS.map(u=>({...u}));
-let shiftsConfig = JSON.parse(localStorage.getItem('ho_shifts') || 'null') || {...SHIFTS_CONFIG};
-function saveUsers(){localStorage.setItem('ho_users',JSON.stringify(adminUsers));}
-function saveShifts(){localStorage.setItem('ho_shifts',JSON.stringify(shiftsConfig));}
-
+// ── ADMIN ────────────────────────────────────────────────────────────
 function renderAdmin(){
   if(curUser.role!=='Admin'){document.getElementById('view-admin').innerHTML='<div class="card empty">⛔ Admin access only.</div>';return;}
-  const tabs=['users','shifts','stats'];
   const curTab=window._adminTab||'users';
   document.getElementById('view-admin').innerHTML=`
   <div class="card" style="padding:0;overflow:hidden">
-    <div style="display:flex;border-bottom:2px solid #f0f0f0;">
-      ${[['users','👥 Users'],['shifts','⏰ Shift Timings'],['stats','📊 Statistics']].map(([k,l])=>`
+    <div style="display:flex;border-bottom:2px solid #f0f0f0">
+      ${[['users','👥 Users'],['shifts','⏰ Shifts'],['stats','📊 Stats']].map(([k,l])=>`
       <button onclick="window._adminTab='${k}';renderAdmin()" style="flex:1;padding:12px;border:none;background:${curTab===k?'#6264A7':'white'};color:${curTab===k?'white':'#555'};font-weight:700;font-size:13px;cursor:pointer">${l}</button>`).join('')}
     </div>
     <div style="padding:20px" id="adminContent"></div>
   </div>`;
-
-  if(curTab==='users') renderAdminUsers();
-  if(curTab==='shifts') renderAdminShifts();
-  if(curTab==='stats') renderAdminStats();
+  if(curTab==='users')renderAdminUsers();
+  if(curTab==='shifts')renderAdminShifts();
+  if(curTab==='stats')renderAdminStats();
 }
 
-function renderAdminUsers(){
+async function renderAdminUsers(){
+  const snap=await db.ref('users').get();
+  users=snap.val()||{};
   const el=document.getElementById('adminContent');
   el.innerHTML=`
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-    <div style="font-weight:700;font-size:15px">👥 Team Members (${adminUsers.length})</div>
+    <div style="font-weight:700;font-size:15px">👥 Team Members (${Object.keys(users).length})</div>
     <button class="btn btn-primary btn-sm" onclick="openAddUser()">+ Add User</button>
   </div>
-  ${adminUsers.map((u,i)=>`
+  ${Object.values(users).map((u,i)=>`
   <div style="background:#f9f9ff;border-radius:10px;padding:12px 14px;margin-bottom:10px;border:1px solid #e8e8f7">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
       <div>
-        <div style="font-weight:700;font-size:14px">${esc(u.name)}</div>
-        <div style="font-size:12px;color:#888;margin-top:2px">${esc(u.email)}</div>
+        <div style="font-weight:700">${esc(u.name)}</div>
+        <div style="font-size:12px;color:#888">${esc(u.email)}</div>
       </div>
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
         ${badge(u.role,ROLE_COLOR[u.role]||'#888')}
         ${badge(u.shift,'#0891b2')}
         ${badge(u.active?'Active':'Inactive',u.active?'#22c55e':'#ef4444')}
-        <button class="btn btn-primary btn-sm" onclick="openEditUser(${i})">✏️ Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="toggleUserActive(${i})">${u.active?'Deactivate':'Activate'}</button>
+        <button class="btn btn-primary btn-sm" onclick="openEditUser('${u.id}')">✏️ Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="toggleActive('${u.id}',${u.active})">${u.active?'Deactivate':'Activate'}</button>
       </div>
     </div>
   </div>`).join('')}`;
@@ -656,78 +623,63 @@ function renderAdminUsers(){
 
 function openAddUser(){
   document.getElementById('modalTitle').textContent='➕ Add New User';
-  document.getElementById('modalBody').innerHTML=userForm({name:'',email:'',password:'',role:'Agent',shift:'Morning',active:true},'addUser()');
+  document.getElementById('modalBody').innerHTML=userForm({name:'',email:'',password:'',role:'Agent',shift:'Morning',active:true},'saveNewUser()');
   document.getElementById('modal').style.display='flex';
 }
-
-function openEditUser(i){
-  const u=adminUsers[i];
+function openEditUser(uid){
+  const u=users[uid];if(!u)return;
   document.getElementById('modalTitle').textContent='✏️ Edit User';
-  document.getElementById('modalBody').innerHTML=userForm(u,`saveEditUser(${i})`);
+  document.getElementById('modalBody').innerHTML=userForm(u,`saveEditUser('${uid}')`);
   document.getElementById('modal').style.display='flex';
 }
-
 function userForm(u,onSave){
   return `
-  <label class="lbl">Full Name *</label>
-  <input id="uf-name" value="${esc(u.name)}" placeholder="e.g. Ravi Kumar"/>
-  <label class="lbl">Email * (@reachmobile.com)</label>
-  <input id="uf-email" value="${esc(u.email)}" placeholder="name@reachmobile.com"/>
-  <label class="lbl">Password *</label>
-  <input id="uf-pass" type="password" value="${esc(u.password)}" placeholder="Min 6 characters"/>
+  <label class="lbl">Full Name *</label><input id="uf-name" value="${esc(u.name)}" placeholder="e.g. Ravi Kumar"/>
+  <label class="lbl">Email * (@reachmobile.com)</label><input id="uf-email" value="${esc(u.email)}" placeholder="name@reachmobile.com"/>
+  <label class="lbl">Password *</label><input id="uf-pass" type="password" value="${esc(u.password)}" placeholder="Min 6 characters"/>
   <div class="row2">
-    <div><label class="lbl">Role</label>
-      <select id="uf-role">${['Admin','Supervisor','Agent'].map(r=>`<option${r===u.role?' selected':''}>${r}</option>`).join('')}</select></div>
-    <div><label class="lbl">Shift</label>
-      <select id="uf-shift">${SHIFTS.map(s=>`<option${s===u.shift?' selected':''}>${s}</option>`).join('')}</select></div>
+    <div><label class="lbl">Role</label><select id="uf-role">${['Admin','Supervisor','Agent'].map(r=>`<option${r===u.role?' selected':''}>${r}</option>`).join('')}</select></div>
+    <div><label class="lbl">Shift</label><select id="uf-shift">${SHIFTS.map(s=>`<option${s===u.shift?' selected':''}>${s}</option>`).join('')}</select></div>
   </div>
   <label class="lbl">Status</label>
   <select id="uf-active"><option value="true"${u.active?' selected':''}>Active</option><option value="false"${!u.active?' selected':''}>Inactive</option></select>
   <div style="margin-top:14px"><button class="btn btn-primary" onclick="${onSave}">💾 Save User</button></div>`;
 }
-
-function addUser(){
-  const name=document.getElementById('uf-name').value.trim();
-  const email=document.getElementById('uf-email').value.trim().toLowerCase();
-  const pass=document.getElementById('uf-pass').value;
-  if(!name||!email||!pass){notify('Please fill all required fields.','error');return;}
-  if(!email.endsWith('@reachmobile.com')){notify('Email must be @reachmobile.com','error');return;}
-  if(pass.length<6){notify('Password must be at least 6 characters.','error');return;}
-  if(adminUsers.find(u=>u.email.toLowerCase()===email)){notify('Email already exists!','error');return;}
-  adminUsers.push({
-    id:'u'+Date.now(),name,email,password:pass,
-    role:document.getElementById('uf-role').value,
-    shift:document.getElementById('uf-shift').value,
-    active:document.getElementById('uf-active').value==='true'
-  });
-  saveUsers();
-  document.getElementById('modal').style.display='none';
-  notify('✅ User added successfully!');
-  renderAdminUsers();
-}
-
-function saveEditUser(i){
-  const name=document.getElementById('uf-name').value.trim();
-  const email=document.getElementById('uf-email').value.trim().toLowerCase();
-  const pass=document.getElementById('uf-pass').value;
-  if(!name||!email||!pass){notify('Please fill all required fields.','error');return;}
-  if(!email.endsWith('@reachmobile.com')){notify('Email must be @reachmobile.com','error');return;}
-  adminUsers[i]={...adminUsers[i],name,email,password:pass,
+function getUserFormData(){
+  return {
+    name:document.getElementById('uf-name').value.trim(),
+    email:document.getElementById('uf-email').value.trim().toLowerCase(),
+    password:document.getElementById('uf-pass').value,
     role:document.getElementById('uf-role').value,
     shift:document.getElementById('uf-shift').value,
     active:document.getElementById('uf-active').value==='true'
   };
-  saveUsers();
+}
+function validateUser(d,skipEmail){
+  if(!d.name||!d.email||!d.password){notify('Fill all required fields.','error');return false;}
+  if(!d.email.endsWith('@reachmobile.com')){notify('Email must be @reachmobile.com','error');return false;}
+  if(d.password.length<6){notify('Password min 6 characters.','error');return false;}
+  return true;
+}
+function saveNewUser(){
+  const d=getUserFormData();if(!validateUser(d))return;
+  const newId='u'+Date.now();
+  db.ref('users/'+newId).set({id:newId,...d});
+  document.getElementById('modal').style.display='none';
+  notify('✅ User added! They can now login from any device.');
+  window._adminTab='users';renderAdmin();
+}
+function saveEditUser(uid){
+  const d=getUserFormData();if(!validateUser(d))return;
+  db.ref('users/'+uid).update(d);
   document.getElementById('modal').style.display='none';
   notify('✅ User updated!');
-  renderAdminUsers();
+  window._adminTab='users';renderAdmin();
 }
-
-function toggleUserActive(i){
-  adminUsers[i].active=!adminUsers[i].active;
-  saveUsers();
-  notify(`User ${adminUsers[i].active?'activated':'deactivated'}.`);
-  renderAdminUsers();
+function toggleActive(uid,current){
+  db.ref('users/'+uid).update({active:!current});
+  notify(`User ${!current?'activated':'deactivated'}.`);
+  window._adminTab='users';renderAdmin();
 }
 
 function renderAdminShifts(){
@@ -735,119 +687,70 @@ function renderAdminShifts(){
   el.innerHTML=`
   <div style="font-weight:700;font-size:15px;margin-bottom:14px">⏰ Shift Timing Configuration</div>
   ${['Morning','Afternoon','Night'].map(sh=>{
-    const c=shiftsConfig[sh]||SHIFTS_CONFIG[sh];
-    return `<div style="background:#f9f9ff;border-radius:10px;padding:16px;margin-bottom:14px;border:1px solid #e8e8f7">
-      <div style="font-weight:700;font-size:14px;margin-bottom:12px">${{Morning:'🌅',Afternoon:'🌆',Night:'🌙'}[sh]} ${sh} Shift</div>
+    const c=SHIFTS_CONFIG[sh]||{};
+    return `<div style="background:#f9f9ff;border-radius:10px;padding:16px;margin-bottom:12px;border:1px solid #e8e8f7">
+      <div style="font-weight:700;margin-bottom:10px">${{Morning:'🌅',Afternoon:'🌆',Night:'🌙'}[sh]} ${sh} Shift</div>
       <div class="row2">
-        <div><label class="lbl">Start Time IST</label>
-          <input id="sh-${sh}-ist-start" value="${c.ist.split('–')[0].trim()}" placeholder="e.g. 6:00 AM"/></div>
-        <div><label class="lbl">End Time IST</label>
-          <input id="sh-${sh}-ist-end" value="${c.ist.split('–')[1]?.trim()||''}" placeholder="e.g. 3:00 PM"/></div>
+        <div><label class="lbl">Start IST</label><input id="sh-${sh}-is" value="${(c.ist||'').split('–')[0]?.trim()||''}"/></div>
+        <div><label class="lbl">End IST</label><input id="sh-${sh}-ie" value="${(c.ist||'').split('–')[1]?.trim()||''}"/></div>
       </div>
       <div class="row2">
-        <div><label class="lbl">Start Time EST</label>
-          <input id="sh-${sh}-est-start" value="${c.est.split('–')[0].trim()}" placeholder="e.g. 7:30 PM"/></div>
-        <div><label class="lbl">End Time EST</label>
-          <input id="sh-${sh}-est-end" value="${c.est.split('–')[1]?.trim()||''}" placeholder="e.g. 4:30 AM"/></div>
+        <div><label class="lbl">Start EST</label><input id="sh-${sh}-es" value="${(c.est||'').split('–')[0]?.trim()||''}"/></div>
+        <div><label class="lbl">End EST</label><input id="sh-${sh}-ee" value="${(c.est||'').split('–')[1]?.trim()||''}"/></div>
       </div>
       <div class="row2">
-        <div><label class="lbl">Notify Time IST</label>
-          <input id="sh-${sh}-nist" value="${c.notifyIST}" placeholder="e.g. 6:15 AM"/></div>
-        <div><label class="lbl">Notify Time EST</label>
-          <input id="sh-${sh}-nest" value="${c.notifyEST}" placeholder="e.g. 7:45 PM"/></div>
+        <div><label class="lbl">Notify IST</label><input id="sh-${sh}-ni" value="${c.notifyIST||''}"/></div>
+        <div><label class="lbl">Notify EST</label><input id="sh-${sh}-ne" value="${c.notifyEST||''}"/></div>
       </div>
     </div>`;
   }).join('')}
   <button class="btn btn-primary" onclick="saveShiftTimings()">💾 Save Shift Timings</button>`;
 }
-
 function saveShiftTimings(){
+  const updated={};
   ['Morning','Afternoon','Night'].forEach(sh=>{
-    const istS=document.getElementById(`sh-${sh}-ist-start`).value.trim();
-    const istE=document.getElementById(`sh-${sh}-ist-end`).value.trim();
-    const estS=document.getElementById(`sh-${sh}-est-start`).value.trim();
-    const estE=document.getElementById(`sh-${sh}-est-end`).value.trim();
-    const nIST=document.getElementById(`sh-${sh}-nist`).value.trim();
-    const nEST=document.getElementById(`sh-${sh}-nest`).value.trim();
-    shiftsConfig[sh]={ist:`${istS} – ${istE}`,est:`${estS} – ${estE}`,notifyIST:nIST,notifyEST:nEST};
+    updated[sh]={
+      ist:`${document.getElementById(`sh-${sh}-is`).value.trim()} – ${document.getElementById(`sh-${sh}-ie`).value.trim()}`,
+      est:`${document.getElementById(`sh-${sh}-es`).value.trim()} – ${document.getElementById(`sh-${sh}-ee`).value.trim()}`,
+      notifyIST:document.getElementById(`sh-${sh}-ni`).value.trim(),
+      notifyEST:document.getElementById(`sh-${sh}-ne`).value.trim()
+    };
   });
-  saveShifts();
-  // update runtime config
-  Object.assign(SHIFTS_CONFIG,shiftsConfig);
-  notify('✅ Shift timings saved!');
+  db.ref('config/shifts').set(updated);
+  Object.assign(SHIFTS_CONFIG,updated);
+  notify('✅ Shift timings saved for all users!');
   updateHeader();
 }
 
 function renderAdminStats(){
-  const el=document.getElementById('adminContent');
-  el.innerHTML=`
-  <div style="font-weight:700;font-size:15px;margin-bottom:14px">📊 Task Statistics</div>
-  <div class="stat-grid" style="margin-bottom:16px">
-    ${[['Total',tasks.length,'#6264A7'],['Open',tasks.filter(t=>t.status==='Open').length,'#f59e0b'],['In Progress',tasks.filter(t=>t.status==='In Progress').length,'#3b82f6'],['Closed',tasks.filter(t=>t.status==='Closed').length,'#6b7280']].map(([l,v,c])=>`
+  const all=taskArr();
+  document.getElementById('adminContent').innerHTML=`
+  <div style="font-weight:700;font-size:15px;margin-bottom:12px">📊 Statistics</div>
+  <div class="stat-grid" style="margin-bottom:14px">
+    ${[['Total',all.length,'#6264A7'],['Open',all.filter(t=>t.status==='Open').length,'#f59e0b'],['In Progress',all.filter(t=>t.status==='In Progress').length,'#3b82f6'],['Closed',all.filter(t=>t.status==='Closed').length,'#6b7280']].map(([l,v,c])=>`
     <div class="stat-card" style="border-top:4px solid ${c}"><div class="stat-num" style="color:${c}">${v}</div><div class="stat-label">${l}</div></div>`).join('')}
   </div>
-  <div style="font-weight:700;margin-bottom:8px">By Item Type</div>
-  <div class="badges" style="margin-bottom:16px">
-    ${ITEM_TYPES.map(tp=>badge(T_ICON[tp]+' '+tp+': '+tasks.filter(t=>t.type===tp).length,'#6264A7')).join('')}
-  </div>
+  <div style="font-weight:700;margin-bottom:8px">By Type</div>
+  <div class="badges" style="margin-bottom:16px">${ITEM_TYPES.map(tp=>badge(T_ICON[tp]+' '+tp+': '+all.filter(t=>t.type===tp).length,'#6264A7')).join('')}</div>
   <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <button class="btn btn-danger btn-sm" onclick="clearClosedTasks()">🗑 Clear All Closed Tasks</button>
-    <button class="btn btn-primary btn-sm" onclick="downloadCSV()">⬇ Export All to Excel</button>
+    <button class="btn btn-danger btn-sm" onclick="clearClosed()">🗑 Clear Closed Tasks</button>
+    <button class="btn btn-primary btn-sm" onclick="downloadCSV()">⬇ Export Excel</button>
   </div>`;
 }
-
-function clearClosedTasks(){
-  if(!confirm('Remove all closed tasks?'))return;
-  tasks=tasks.filter(t=>t.status!=='Closed');save();
-  notify('All closed tasks cleared.');renderAdmin();
+function clearClosed(){
+  if(!confirm('Remove all closed tasks from database?'))return;
+  const toDelete=Object.values(tasks).filter(t=>t.status==='Closed');
+  toDelete.forEach(t=>db.ref('tasks/'+t.id).remove());
+  notify(`${toDelete.length} closed tasks removed.`);
 }
 
-// override login to check adminUsers
-function getUsers(){return JSON.parse(localStorage.getItem('ho_users')||'null')||USERS;}
-
-// ─── PROFILE ─────────────────────────────────────────────────────────
-function renderProfile(){
-  const sh=getCurrentShift();
-  const cfg=SHIFTS_CONFIG[sh];
-  document.getElementById('view-profile').innerHTML=`
-  <div class="card">
-    <div class="section-title">👤 My Profile</div>
-    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
-      <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#6264A7,#464775);color:white;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700">${curUser.name.charAt(0)}</div>
-      <div>
-        <div style="font-size:18px;font-weight:700">${esc(curUser.name)}</div>
-        <div style="font-size:13px;color:#888">${esc(curUser.email)}</div>
-        <div class="badges" style="margin-top:6px">${badge(curUser.role,ROLE_COLOR[curUser.role]||'#888')}${badge(curUser.shift+' Shift','#0891b2')}</div>
-      </div>
-    </div>
-    <div style="background:#f5f5ff;border-radius:10px;padding:16px">
-      <div style="font-weight:700;margin-bottom:10px">⏰ My Shift Timings</div>
-      ${['Morning','Afternoon','Night'].map(s=>{
-        const c=SHIFTS_CONFIG[s];
-        return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:13px">
-          <b>${s}</b>
-          <span>IST: ${c.ist}</span>
-          <span style="color:#888">EST: ${c.est}</span>
-        </div>`;
-      }).join('')}
-    </div>
-    <div style="margin-top:16px">
-      <div style="font-weight:700;margin-bottom:8px">📊 My Activity</div>
-      <div class="badges">
-        ${badge('Submitted: '+tasks.filter(t=>t.submittedByEmail===curUser.email).length,'#6264A7')}
-        ${badge('Assigned: '+tasks.filter(t=>t.assignedTo===curUser.name).length,'#3b82f6')}
-        ${badge('Closed: '+tasks.filter(t=>t.assignedTo===curUser.name&&t.status==='Closed').length,'#22c55e')}
-      </div>
-    </div>
-  </div>`;
-}
-
-// ─── TEAMS NOTIFICATION ───────────────────────────────────────────────
+// ── TEAMS NOTIFICATION ────────────────────────────────────────────────
 function sendTeamsNotification(){
-  const open=sortTasks(tasks.filter(t=>t.status==='Open'));
-  const ip=sortTasks(tasks.filter(t=>t.status==='In Progress'));
+  const all=taskArr();
+  const open=all.filter(t=>t.status==='Open');
+  const ip=all.filter(t=>t.status==='In Progress');
   const sh=getCurrentShift();
-  const cfg=SHIFTS_CONFIG[sh];
+  const cfg=SHIFTS_CONFIG[sh]||{};
   const msg=`📋 SHIFT HANDOVER SUMMARY — ${sh} Shift | ${new Date().toLocaleDateString('en-IN')}
 IST: ${cfg.ist} | EST: ${cfg.est}
 
@@ -865,28 +768,20 @@ ${ip.map(t=>`• ${T_ICON[t.type]} ${t.title} | Assigned: ${t.assignedTo||'Unass
 
 Total Open: ${open.length} | In Progress: ${ip.length}
 👉 App: https://ayyanartest-ui.github.io/shift-handover`;
-
-  document.getElementById('modalTitle').textContent='📢 Teams Notification Preview';
+  document.getElementById('modalTitle').textContent='📢 Teams Notification';
   document.getElementById('modalBody').innerHTML=`
-    <div style="font-size:12px;color:#888;margin-bottom:10px">Copy this message and paste it in your Teams channel:</div>
-    <div style="background:#1e1e2e;color:#cdd6f4;border-radius:8px;padding:14px;font-family:monospace;font-size:12px;white-space:pre-wrap;line-height:1.7;max-height:340px;overflow-y:auto">${esc(msg)}</div>
-    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-      <button class="btn btn-primary" onclick="copyNotif()">📋 Copy Message</button>
-      <div style="font-size:12px;color:#888;margin-top:8px">💡 To auto-send, set up Power Automate flow with the webhook URL.</div>
-    </div>`;
-  window._notifMsg=msg;
+    <div style="font-size:12px;color:#888;margin-bottom:8px">Copy and paste in your Teams channel:</div>
+    <div style="background:#1e1e2e;color:#cdd6f4;border-radius:8px;padding:14px;font-family:monospace;font-size:12px;white-space:pre-wrap;line-height:1.7;max-height:320px;overflow-y:auto">${esc(msg)}</div>
+    <button class="btn btn-primary" style="margin-top:12px" onclick="navigator.clipboard.writeText(window._nm||'').then(()=>notify('✅ Copied!'))">📋 Copy Message</button>`;
+  window._nm=msg;
   document.getElementById('modal').style.display='flex';
 }
-function copyNotif(){
-  navigator.clipboard.writeText(window._notifMsg||'').then(()=>notify('✅ Copied! Paste in Teams channel.'));
-}
 
-// ─── EXPORT CSV ──────────────────────────────────────────────────────
+// ── EXPORT CSV ───────────────────────────────────────────────────────
 function downloadCSV(){
   const headers=['Title','Type','Description','Shift','Priority','Status','Submitted By','Assigned To','Date Submitted','Date Closed'];
-  const rows=tasks.map(t=>[
-    `"${(t.title||'').replace(/"/g,'""')}"`,
-    t.type,
+  const rows=taskArr().map(t=>[
+    `"${(t.title||'').replace(/"/g,'""')}"`,t.type,
     `"${(t.description||'').replace(/"/g,'""')}"`,
     t.shift,t.priority,t.status,
     `"${(t.submittedBy||'').replace(/"/g,'""')}"`,
@@ -897,17 +792,11 @@ function downloadCSV(){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
   a.download=`ShiftHandover_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-  notify('✅ CSV downloaded!');
+  a.click();notify('✅ CSV downloaded!');
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────
-  Object.assign(SHIFTS_CONFIG, JSON.parse(localStorage.getItem('ho_shifts')||'null')||{});
-  if(curUser){
-  bootApp();
-} else {
-  document.getElementById('loginScreen').style.display='flex';
-}
+// ── START ────────────────────────────────────────────────────────────
+init();
 </script>
 </body>
 </html>
