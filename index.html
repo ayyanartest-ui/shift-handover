@@ -317,49 +317,39 @@ function stopVoice(){
   if(st)st.textContent='';
 }
 
-// AI Processing
-async function processWithAI(transcript){
+// Smart local processing — no AI needed
+function processWithAI(transcript){
   const st=document.getElementById('aiStatus');
-  if(st)st.textContent='🤖 AI is processing your speech...';
-  try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        messages:[{role:'user',content:`You are a smart form filler for a shift handover app. Extract task details from this voice input and return ONLY a JSON object with no extra text or markdown.
+  if(st)st.textContent='⚙️ Processing your speech...';
 
-Voice input: "${transcript}"
+  // Detect priority from keywords
+  const low=transcript.toLowerCase();
+  let priority='Medium';
+  if(/urgent|critical|important|high|emergency|immediately|asap|severe|broken|down|fail/i.test(low)) priority='High';
+  else if(/minor|small|low|whenever|later|sometime|not urgent|can wait/i.test(low)) priority='Low';
 
-Return this exact JSON structure:
-{
-  "title": "short clear task name (fix any spelling errors)",
-  "description": "detailed description with context (fix spelling errors)",
-  "priority": "High or Medium or Low (detect from urgency words)",
-  "shift": "Morning or Evening or Night (detect if mentioned, else empty string)"
-}
+  // Detect shift from keywords
+  let shift='';
+  if(/morning|day shift|first shift/i.test(low)) shift='Morning';
+  else if(/evening|afternoon|second shift/i.test(low)) shift='Evening';
+  else if(/night|third shift|overnight/i.test(low)) shift='Night';
 
-Rules:
-- Fix all spelling mistakes
-- title should be max 8 words
-- priority: use High for urgent/critical/important, Low for minor/small, else Medium
-- Only set shift if clearly mentioned in speech`}]
-      })
-    });
-    const data=await resp.json();
-    const txt=data.content[0].text.trim().replace(/```json|```/g,'').trim();
-    const parsed=JSON.parse(txt);
-    fillForm(parsed);
-    if(st)st.textContent='✅ AI filled your form!';
-    const af=document.getElementById('aiFilled');
-    if(af)af.style.display='block';
-  }catch(e){
-    if(st)st.textContent='⚠️ AI unavailable — please fill manually.';
-    // fallback: just put transcript in description
-    const fd=document.getElementById('f-desc');
-    if(fd)fd.value=transcript;
-  }
+  // Build title — first meaningful sentence or first 8 words
+  const sentences=transcript.split(/[.,!?]/);
+  let title=sentences[0].trim();
+  const words=title.split(' ');
+  if(words.length>8) title=words.slice(0,8).join(' ')+'...';
+  // Capitalize first letter
+  title=title.charAt(0).toUpperCase()+title.slice(1);
+
+  // Rest goes to description
+  const desc=transcript.charAt(0).toUpperCase()+transcript.slice(1);
+
+  fillForm({title, description:desc, priority, shift});
+
+  if(st)st.textContent='✅ Form filled from your speech!';
+  const af=document.getElementById('aiFilled');
+  if(af)af.style.display='block';
 }
 
 function fillForm(data){
