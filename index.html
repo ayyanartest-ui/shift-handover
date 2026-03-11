@@ -3,133 +3,492 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Shift Handover Board v2.0</title>
+<title>ShiftOps — Shift Handover Board</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --primary: #7c3aed;
+  --primary-light: #8b5cf6;
+  --primary-dark: #6d28d9;
+  --accent: #06b6d4;
+  --accent2: #f59e0b;
+  --success: #10b981;
+  --danger: #ef4444;
+  --bg: #0f0f1a;
+  --bg2: #161628;
+  --bg3: #1e1e35;
+  --surface: #1a1a2e;
+  --surface2: #22223a;
+  --border: rgba(124,58,237,.2);
+  --border2: rgba(255,255,255,.06);
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #64748b;
+  --glow: 0 0 30px rgba(124,58,237,.3);
+  --glow-sm: 0 0 15px rgba(124,58,237,.2);
+}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Segoe UI',sans-serif;background:#f0f2f7;color:#1a1a2e;min-height:100vh;}
-.login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#6264A7,#464775);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;}
-.login-card{background:white;border-radius:16px;padding:36px;width:100%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,.25);}
-.login-logo{text-align:center;margin-bottom:20px;}
-.login-logo div:first-child{font-size:44px;}
-.login-logo h2{font-size:22px;font-weight:700;margin-top:8px;}
-.login-logo p{font-size:13px;color:#888;margin-top:4px;}
-.login-error{background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;color:#dc2626;margin-bottom:12px;display:none;}
-.loading-screen{position:fixed;inset:0;background:linear-gradient(135deg,#6264A7,#464775);z-index:300;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;gap:16px;}
-.spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.header{background:linear-gradient(135deg,#6264A7,#464775);color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
-.header h1{font-size:17px;font-weight:700;}
-.header p{font-size:11px;opacity:.85;margin-top:2px;}
-.hbtns{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
-.hbtn{background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;}
-.hbtn.white{background:white;color:#6264A7;}
-.hbtn.red{background:#ef4444;border-color:#ef4444;}
-nav{display:flex;gap:4px;background:white;padding:8px 16px;box-shadow:0 2px 6px rgba(0,0,0,.08);overflow-x:auto;}
-nav button{padding:7px 14px;border:none;border-radius:6px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;background:transparent;color:#555;}
-nav button.active{background:#6264A7;color:white;}
-.container{max-width:960px;margin:0 auto;padding:16px;}
-.card{background:white;border-radius:12px;padding:20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
-.stat-card{background:white;border-radius:10px;padding:14px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.06);}
-.stat-num{font-size:26px;font-weight:800;}
-.stat-label{font-size:11px;color:#777;margin-top:3px;}
-label.lbl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#555;margin-bottom:4px;}
-input,select,textarea{width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #e0e0e0;font-size:14px;outline:none;margin-bottom:10px;font-family:inherit;background:white;}
-input:focus,select:focus,textarea:focus{border-color:#6264A7;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--primary);border-radius:10px;}
+
+/* ════════════════════════════════════════
+   WELCOME / LOGIN SCREEN
+════════════════════════════════════════ */
+#welcomeScreen {
+  position:fixed;inset:0;z-index:500;overflow:hidden;
+  background: linear-gradient(135deg, #0f0f1a 0%, #1a0a2e 40%, #0a1628 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+
+/* Animated bg orbs */
+.orb {
+  position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;animation:orbFloat 8s ease-in-out infinite;
+}
+.orb1{width:500px;height:500px;background:radial-gradient(circle,rgba(124,58,237,.35),transparent 70%);top:-100px;left:-100px;animation-delay:0s;}
+.orb2{width:400px;height:400px;background:radial-gradient(circle,rgba(6,182,212,.25),transparent 70%);bottom:-80px;right:-80px;animation-delay:3s;}
+.orb3{width:300px;height:300px;background:radial-gradient(circle,rgba(245,158,11,.2),transparent 70%);top:40%;left:60%;animation-delay:5s;}
+@keyframes orbFloat{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-30px) scale(1.05);}}
+
+/* Grid lines */
+.grid-bg{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(124,58,237,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,58,237,.06) 1px, transparent 1px);
+  background-size:60px 60px;
+}
+
+/* Floating stat chips on welcome screen */
+.floating-chips{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.chip{
+  position:absolute;background:rgba(255,255,255,.04);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 16px;
+  font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;
+  animation:chipFloat linear infinite;
+}
+.chip span{color:var(--primary-light);font-weight:700;}
+@keyframes chipFloat{0%{transform:translateY(100vh) translateX(0) rotate(0deg);opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{transform:translateY(-100px) translateX(20px) rotate(5deg);opacity:0;}}
+
+/* Welcome content */
+.welcome-content{position:relative;z-index:10;text-align:center;padding:20px;}
+.welcome-logo{margin-bottom:32px;}
+.logo-icon{
+  width:90px;height:90px;border-radius:24px;margin:0 auto 20px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:flex;align-items:center;justify-content:center;font-size:40px;
+  box-shadow:0 0 40px rgba(124,58,237,.5),0 20px 60px rgba(0,0,0,.5);
+  animation:logoPulse 3s ease-in-out infinite;
+}
+@keyframes logoPulse{0%,100%{box-shadow:0 0 40px rgba(124,58,237,.5),0 20px 60px rgba(0,0,0,.5);}50%{box-shadow:0 0 60px rgba(124,58,237,.7),0 20px 60px rgba(0,0,0,.5);}}
+.welcome-title{font-size:42px;font-weight:900;line-height:1.1;margin-bottom:12px;background:linear-gradient(135deg,#fff 0%,var(--primary-light) 50%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.welcome-sub{font-size:16px;color:var(--text2);margin-bottom:48px;font-weight:400;}
+.welcome-sub span{color:var(--accent);font-weight:600;}
+
+/* Login card */
+.login-card{
+  background:rgba(22,22,40,.8);backdrop-filter:blur(20px);
+  border:1px solid rgba(124,58,237,.3);border-radius:24px;
+  padding:40px;width:100%;max-width:420px;
+  box-shadow:0 25px 80px rgba(0,0,0,.5),var(--glow);
+  position:relative;overflow:hidden;
+}
+.login-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--primary),var(--accent),transparent);
+}
+.login-error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:10px 14px;font-size:13px;color:#fca5a5;margin-bottom:14px;display:none;}
+.input-group{position:relative;margin-bottom:16px;}
+.input-group label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px;}
+.input-group input{
+  width:100%;padding:12px 16px;
+  background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);
+  border-radius:12px;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;
+  outline:none;transition:all .2s;
+}
+.input-group input:focus{border-color:var(--primary);background:rgba(124,58,237,.08);box-shadow:0 0 0 4px rgba(124,58,237,.1);}
+.input-group input::placeholder{color:var(--text3);}
+.btn-login{
+  width:100%;padding:14px;border:none;border-radius:12px;font-weight:700;font-size:15px;
+  cursor:pointer;color:white;margin-top:8px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  box-shadow:0 8px 24px rgba(124,58,237,.4);transition:all .2s;position:relative;overflow:hidden;
+}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(124,58,237,.5);}
+.btn-login:active{transform:translateY(0);}
+.btn-login::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1),transparent);border-radius:12px;}
+.welcome-badges{display:flex;gap:12px;justify-content:center;margin-top:32px;flex-wrap:wrap;}
+.w-badge{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--text2);}
+.w-badge span{font-size:16px;}
+
+/* ════════════════════════════════════════
+   LOADING SCREEN
+════════════════════════════════════════ */
+#loadingScreen{
+  position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;
+  background:linear-gradient(135deg,#0f0f1a,#1a0a2e);
+}
+.loading-logo{width:70px;height:70px;border-radius:20px;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:8px;box-shadow:var(--glow);}
+.loading-text{font-size:18px;font-weight:700;color:var(--text);}
+.loading-sub{font-size:13px;color:var(--text3);}
+.loader-bar{width:200px;height:3px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden;margin-top:8px;}
+.loader-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:10px;animation:loaderAnim 1.5s ease-in-out infinite;}
+@keyframes loaderAnim{0%{width:0%;margin-left:0;}50%{width:60%;margin-left:20%;}100%{width:0%;margin-left:100%;}}
+
+/* ════════════════════════════════════════
+   MAIN APP
+════════════════════════════════════════ */
+#mainApp{display:none;}
+
+/* ── HEADER ── */
+.app-header{
+  background:rgba(22,22,40,.9);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border2);padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:64px;position:sticky;top:0;z-index:100;
+}
+.app-header-left{display:flex;align-items:center;gap:16px;}
+.header-logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.header-brand{font-size:16px;font-weight:800;background:linear-gradient(135deg,#fff,var(--primary-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.header-shift-badge{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:8px;padding:4px 12px;font-size:11px;font-weight:600;color:var(--primary-light);}
+.header-right{display:flex;align-items:center;gap:8px;}
+.hbtn{padding:7px 14px;border-radius:9px;font-weight:600;font-size:12px;cursor:pointer;border:1px solid var(--border2);background:rgba(255,255,255,.05);color:var(--text2);transition:all .15s;}
+.hbtn:hover{background:rgba(255,255,255,.1);color:var(--text);border-color:rgba(255,255,255,.15);}
+.hbtn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;border-color:transparent;}
+.hbtn.primary:hover{opacity:.9;}
+.hbtn.accent{background:rgba(6,182,212,.15);color:var(--accent);border-color:rgba(6,182,212,.3);}
+.hbtn.success{background:rgba(16,185,129,.15);color:var(--success);border-color:rgba(16,185,129,.3);}
+.hbtn.danger{background:rgba(239,68,68,.15);color:#fca5a5;border-color:rgba(239,68,68,.3);}
+.hbtn.ar-on{background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(6,182,212,.2));color:var(--success);border-color:rgba(16,185,129,.4);animation:arPulse 2s infinite;}
+@keyframes arPulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.3);}50%{box-shadow:0 0 0 6px rgba(16,185,129,0);}}
+
+/* live indicator */
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block;margin-right:5px;animation:liveBlink 2s infinite;}
+@keyframes liveBlink{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(16,185,129,.4);}50%{opacity:.6;box-shadow:0 0 0 5px rgba(16,185,129,0);}}
+.header-info-text{font-size:11px;color:var(--text3);}
+.header-info-text b{color:var(--text2);}
+
+/* ── NAV ── */
+.app-nav{
+  background:rgba(22,22,40,.8);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border2);
+  padding:0 24px;display:flex;gap:2px;overflow-x:auto;
+}
+.app-nav::-webkit-scrollbar{height:0;}
+.nav-btn{
+  padding:14px 18px;border:none;background:transparent;color:var(--text3);
+  font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap;
+  border-bottom:2px solid transparent;transition:all .2s;font-family:'Inter',sans-serif;
+  display:flex;align-items:center;gap:6px;
+}
+.nav-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.nav-btn.active{color:var(--primary-light);border-bottom-color:var(--primary-light);}
+.nav-badge{background:var(--danger);color:white;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center;}
+
+/* ── CONTAINER ── */
+.container{max-width:1100px;margin:0 auto;padding:24px 20px;}
+
+/* ── CARDS ── */
+.card{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:16px;padding:20px;margin-bottom:16px;
+  transition:border-color .2s;
+}
+.card:hover{border-color:rgba(124,58,237,.25);}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+.card-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.card-title-icon{width:28px;height:28px;border-radius:8px;background:rgba(124,58,237,.2);display:flex;align-items:center;justify-content:center;font-size:14px;}
+
+/* ── STAT GRID ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:14px;padding:18px;position:relative;overflow:hidden;
+  transition:all .2s;cursor:default;
+}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--stat-color,var(--primary));}
+.stat-card:hover{border-color:var(--stat-color,var(--primary));transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+.stat-num{font-size:32px;font-weight:900;color:var(--stat-color,var(--primary));line-height:1;}
+.stat-label{font-size:11px;font-weight:600;color:var(--text3);margin-top:6px;text-transform:uppercase;letter-spacing:.5px;}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+.stat-icon{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:32px;opacity:.1;}
+
+/* ── WELCOME BANNER ── */
+.welcome-banner{
+  background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(6,182,212,.1));
+  border:1px solid rgba(124,58,237,.3);border-radius:16px;padding:20px 24px;
+  margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  position:relative;overflow:hidden;
+}
+.welcome-banner::before{content:'';position:absolute;top:-50%;right:-50px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.1),transparent 70%);pointer-events:none;}
+.wb-left h2{font-size:20px;font-weight:800;margin-bottom:4px;}
+.wb-left p{font-size:13px;color:var(--text2);}
+.wb-right{display:flex;gap:8px;flex-wrap:wrap;}
+.shift-pill{background:rgba(255,255,255,.06);border:1px solid var(--border2);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--text2);}
+.shift-pill span{color:var(--accent);font-size:13px;}
+
+/* ── TASK CARDS ── */
+.task-card{
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:14px;padding:14px 16px;margin-bottom:10px;
+  cursor:pointer;transition:all .2s;
+  border-left:3px solid transparent;position:relative;overflow:hidden;
+}
+.task-card:hover{border-color:rgba(124,58,237,.4);transform:translateX(3px);background:rgba(34,34,58,.9);}
+.task-card.sla-breach{border-left-color:var(--danger)!important;background:rgba(239,68,68,.05);}
+.task-card.sla-warning{border-left-color:var(--accent2)!important;background:rgba(245,158,11,.04);}
+.task-card.my-task{border-left-color:var(--accent)!important;}
+.task-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;}
+.task-title{font-weight:700;font-size:14px;color:var(--text);}
+.task-meta{font-size:11px;color:var(--text3);margin-top:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.badges{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.sla-row{display:flex;align-items:center;gap:8px;margin:7px 0 4px;}
+.sla-bar-wrap{flex:1;background:rgba(255,255,255,.06);border-radius:4px;height:4px;overflow:hidden;min-width:60px;}
+.sla-bar-fill{height:100%;border-radius:4px;transition:width .5s;}
+.sla-label{font-size:10px;font-weight:700;white-space:nowrap;}
+.assignee-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.25);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;color:var(--primary-light);}
+.assignee-pill.unassigned{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25);color:#fca5a5;}
+.assign-btn-inline{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:8px;padding:3px 10px;font-size:11px;font-weight:600;color:var(--primary-light);cursor:pointer;transition:all .15s;}
+.assign-btn-inline:hover{background:rgba(124,58,237,.3);}
+
+/* ── AVATAR ── */
+.avatar{border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:white;flex-shrink:0;}
+
+/* ── FORMS ── */
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:7px;}
+input[type=text],input[type=email],input[type=password],input[type=number],select,textarea{
+  width:100%;padding:10px 14px;background:rgba(255,255,255,.04);
+  border:1.5px solid var(--border2);border-radius:10px;
+  color:var(--text);font-size:14px;font-family:'Inter',sans-serif;
+  outline:none;transition:all .2s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);background:rgba(124,58,237,.06);box-shadow:0 0 0 3px rgba(124,58,237,.1);}
+input::placeholder,textarea::placeholder{color:var(--text3);}
+select option{background:var(--bg3);color:var(--text);}
 textarea{min-height:80px;resize:vertical;}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
-.btn{padding:9px 20px;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;color:white;}
-.btn-primary{background:#6264A7;}
-.btn-success{background:#22c55e;}
-.btn-danger{background:#ef4444;}
-.btn-orange{background:#f59e0b;}
-.btn-sm{padding:6px 12px;font-size:12px;}
-.task-card{background:white;border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:4px solid #6264A7;cursor:pointer;transition:transform .15s;}
-.task-card:hover{transform:translateX(3px);}
-.task-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;}
-.task-title{font-weight:700;font-size:14px;}
-.task-meta{font-size:11px;color:#aaa;margin-top:5px;}
-.badges{display:flex;gap:5px;flex-wrap:wrap;}
-.badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:700;}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;}
-.modal{background:white;border-radius:14px;padding:24px;width:100%;max-width:500px;box-shadow:0 8px 32px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto;}
-.modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
-.modal-title{font-weight:700;font-size:16px;flex:1;padding-right:10px;}
-.close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;}
-.notif{position:fixed;top:16px;right:16px;padding:12px 20px;border-radius:8px;font-weight:600;font-size:13px;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2);color:white;animation:slideIn .3s ease;max-width:320px;}
-@keyframes slideIn{from{transform:translateX(60px);opacity:0;}to{transform:translateX(0);opacity:1;}}
-.section-title{font-weight:700;font-size:15px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
-.empty{text-align:center;padding:28px;color:#aaa;font-size:14px;}
-.progress-wrap{background:#f0f0f0;border-radius:6px;height:8px;overflow:hidden;margin:6px 0 10px;}
-.progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#6264A7,#22c55e);transition:width .5s;}
-.announce{background:linear-gradient(135deg,#e8f4fd,#dbeafe);border:1px solid #93c5fd;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#1e40af;}
-.filter-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
-.sort-btn{padding:6px 12px;border-radius:6px;border:1.5px solid #6264A7;background:white;color:#6264A7;font-size:12px;font-weight:600;cursor:pointer;}
-.sort-btn.active{background:#6264A7;color:white;}
-.voice-area{background:linear-gradient(135deg,#f0f0ff,#e8e8fa);border:2px dashed #6264A7;border-radius:12px;padding:16px;margin-bottom:16px;text-align:center;}
-.mic-btn{width:64px;height:64px;border-radius:50%;border:none;cursor:pointer;font-size:26px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#6264A7,#464775);color:white;box-shadow:0 4px 14px rgba(98,100,167,.4);transition:all .2s;}
-.mic-btn.listening{background:linear-gradient(135deg,#ef4444,#dc2626);animation:pulse 1s infinite;}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4);}50%{box-shadow:0 0 0 14px rgba(239,68,68,0);}}
-.transcript-box{background:white;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:13px;color:#444;min-height:36px;border:1.5px solid #e0e0e0;text-align:left;line-height:1.6;}
-.sync-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;margin-right:4px;animation:blink 2s infinite;}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
-@media(max-width:600px){.stat-grid{grid-template-columns:repeat(2,1fr);}.row2,.row3,.filter-row{grid-template-columns:1fr;}}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+
+/* ── BUTTONS ── */
+.btn{padding:10px 20px;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;color:white;font-family:'Inter',sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{opacity:.9;transform:translateY(-1px);}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));}
+.btn-success{background:linear-gradient(135deg,var(--success),#059669);}
+.btn-danger{background:linear-gradient(135deg,var(--danger),#dc2626);}
+.btn-orange{background:linear-gradient(135deg,var(--accent2),#d97706);}
+.btn-gray{background:rgba(255,255,255,.1);color:var(--text2);border:1px solid var(--border2);}
+.btn-sm{padding:6px 14px;font-size:12px;border-radius:8px;}
+.btn-xs{padding:4px 10px;font-size:11px;border-radius:6px;}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{
+  background:var(--bg3);border:1px solid var(--border);border-radius:20px;
+  padding:28px;width:100%;max-width:540px;
+  box-shadow:0 25px 80px rgba(0,0,0,.6),var(--glow);
+  max-height:90vh;overflow-y:auto;position:relative;
+}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--primary),var(--accent),transparent);border-radius:20px 20px 0 0;}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+.modal-title{font-weight:800;font-size:17px;color:var(--text);}
+.close-btn{background:rgba(255,255,255,.06);border:1px solid var(--border2);width:32px;height:32px;border-radius:8px;cursor:pointer;color:var(--text3);font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.close-btn:hover{background:rgba(239,68,68,.15);color:var(--danger);}
+
+/* ── TIMELINE ── */
+.timeline{border-left:2px solid var(--border);margin-left:10px;padding-left:18px;}
+.tl-item{position:relative;margin-bottom:12px;}
+.tl-dot{width:10px;height:10px;border-radius:50%;background:var(--primary);position:absolute;left:-24px;top:4px;box-shadow:0 0 6px rgba(124,58,237,.5);}
+.tl-text{font-size:12px;color:var(--text2);}
+.tl-time{font-size:11px;color:var(--text3);margin-top:2px;}
+
+/* ── NOTIFICATION TOAST ── */
+.notif{position:fixed;top:20px;right:20px;padding:14px 20px;border-radius:12px;font-weight:600;font-size:13px;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,.4);color:white;animation:toastIn .3s cubic-bezier(.34,1.56,.64,1);max-width:340px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);}
+@keyframes toastIn{from{transform:translateX(60px) scale(.9);opacity:0;}to{transform:translateX(0) scale(1);opacity:1;}}
+
+/* ── SECTION HEADERS ── */
+.section-title{font-weight:700;font-size:14px;color:var(--text);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.sort-pills{display:flex;gap:6px;}
+.sort-pill{padding:5px 12px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;}
+.sort-pill.active{background:rgba(124,58,237,.2);color:var(--primary-light);border-color:rgba(124,58,237,.4);}
+.empty{text-align:center;padding:40px 20px;color:var(--text3);}
+.empty-icon{font-size:40px;margin-bottom:10px;}
+
+/* ── PROGRESS ── */
+.progress-wrap{background:rgba(255,255,255,.06);border-radius:6px;height:6px;overflow:hidden;margin:6px 0 10px;}
+.progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--primary),var(--accent));transition:width .5s;}
+
+/* ── REMINDER BANNER ── */
+.reminder-banner{
+  background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(239,68,68,.08));
+  border:1px solid rgba(245,158,11,.3);border-radius:14px;padding:14px 18px;margin-bottom:16px;cursor:pointer;transition:all .2s;
+}
+.reminder-banner:hover{border-color:rgba(245,158,11,.5);}
+.reminder-banner-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.reminder-pulse{display:inline-block;width:9px;height:9px;background:var(--danger);border-radius:50%;animation:rp 1.2s infinite;margin-right:6px;}
+@keyframes rp{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5);}50%{box-shadow:0 0 0 8px rgba(239,68,68,0);}}
+.reminder-items{margin-top:12px;display:none;}
+.reminder-items.open{display:block;}
+.reminder-item{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:10px;margin-bottom:6px;font-size:12px;}
+.reminder-item.critical{background:rgba(239,68,68,.08);border-left:3px solid var(--danger);}
+.reminder-item.warning{background:rgba(245,158,11,.08);border-left:3px solid var(--accent2);}
+.reminder-item.info{background:rgba(6,182,212,.08);border-left:3px solid var(--accent);}
+.stale-badge{display:inline-block;background:var(--danger);color:white;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px;}
+
+/* ── ANNOUNCE ── */
+.announce{background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.2);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--accent);}
+
+/* ── PERSON CARD ── */
+.person-card{background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:16px;margin-bottom:12px;transition:border-color .2s;}
+.person-card:hover{border-color:rgba(124,58,237,.3);}
+.mini-stat{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;margin:3px;color:var(--text2);}
+.eff-bar-wrap{background:rgba(255,255,255,.06);border-radius:4px;height:8px;overflow:hidden;margin:8px 0 4px;}
+.eff-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--primary),var(--success));}
+
+/* ── USER ROWS ── */
+.user-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;margin-bottom:8px;border:2px solid var(--border2);cursor:pointer;transition:all .15s;background:var(--surface2);}
+.user-row:hover{border-color:var(--primary);background:rgba(124,58,237,.06);}
+.user-row.selected{border-color:var(--primary);background:rgba(124,58,237,.1);}
+
+/* ── TOGGLE ── */
+.toggle-sw{position:relative;display:inline-block;width:44px;height:24px;}
+.toggle-sw input{opacity:0;width:0;height:0;}
+.toggle-sl{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,.1);border-radius:24px;transition:.3s;border:1px solid var(--border2);}
+.toggle-sl:before{content:"";position:absolute;width:18px;height:18px;left:2px;bottom:2px;background:var(--text3);border-radius:50%;transition:.3s;}
+.toggle-sw input:checked+.toggle-sl{background:var(--primary);border-color:var(--primary);}
+.toggle-sw input:checked+.toggle-sl:before{transform:translateX(20px);background:white;}
+
+/* ── AR STATUS ── */
+.ar-status{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;}
+.ar-status.running{background:rgba(16,185,129,.1);color:var(--success);border:1px solid rgba(16,185,129,.3);}
+.ar-status.paused{background:rgba(255,255,255,.05);color:var(--text3);border:1px solid var(--border2);}
+
+/* ── FILTER ROW ── */
+.filter-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+
+/* ── VOICE ── */
+.voice-area{background:rgba(124,58,237,.06);border:2px dashed rgba(124,58,237,.3);border-radius:14px;padding:20px;margin-bottom:18px;text-align:center;}
+.mic-btn{width:68px;height:68px;border-radius:50%;border:none;cursor:pointer;font-size:28px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary),var(--accent));color:white;box-shadow:0 6px 20px rgba(124,58,237,.4);transition:all .2s;}
+.mic-btn:hover{transform:scale(1.08);}
+.mic-btn.listening{background:linear-gradient(135deg,var(--danger),#dc2626);animation:micPulse 1s infinite;}
+@keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5);}50%{box-shadow:0 0 0 14px rgba(239,68,68,0);}}
+.transcript-box{background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:10px;padding:12px;margin-top:12px;font-size:13px;color:var(--text2);min-height:40px;text-align:left;line-height:1.6;}
+
+/* ── ADMIN TABS ── */
+.admin-tabs{display:flex;border-bottom:1px solid var(--border2);overflow-x:auto;}
+.admin-tab-btn{padding:12px 18px;border:none;background:transparent;color:var(--text3);font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s;font-family:'Inter',sans-serif;}
+.admin-tab-btn.active{color:var(--primary-light);border-bottom-color:var(--primary-light);}
+
+/* ── WEBHOOK CODE ── */
+.code-box{background:rgba(0,0,0,.3);border:1px solid var(--border2);border-radius:10px;padding:14px;font-family:monospace;font-size:12px;color:#cdd6f4;white-space:pre-wrap;max-height:300px;overflow-y:auto;line-height:1.7;}
+
+/* ── SHIFT BADGE ── */
+.shift-indicator{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;}
+
+@media(max-width:700px){
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .row2,.row3,.filter-grid{grid-template-columns:1fr;}
+  .app-header{padding:0 14px;}
+  .welcome-title{font-size:28px;}
+  .hbtn span.hide-mobile{display:none;}
+}
 </style>
 </head>
 <body>
 
 <!-- LOADING -->
-<div id="loadingScreen" class="loading-screen">
-  <div class="spinner"></div>
-  <div style="font-size:16px;font-weight:600;">Connecting to database...</div>
+<div id="loadingScreen">
+  <div class="loading-logo">🔄</div>
+  <div class="loading-text">ShiftOps</div>
+  <div class="loading-sub">Connecting to live database...</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
 </div>
 
-<!-- LOGIN -->
-<div id="loginScreen" class="login-screen" style="display:none">
-  <div class="login-card">
-    <div class="login-logo">
-      <div>🔄</div>
-      <h2>Shift Handover Board</h2>
-      <p>Sign in with your @reachmobile.com account</p>
+<!-- WELCOME / LOGIN -->
+<div id="welcomeScreen">
+  <div class="grid-bg"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+
+  <!-- Floating chips -->
+  <div class="floating-chips" id="floatingChips"></div>
+
+  <div class="welcome-content">
+    <div class="welcome-logo">
+      <div class="logo-icon">🔄</div>
+      <div class="welcome-title">ShiftOps</div>
+      <div class="welcome-sub">Enterprise Shift Handover & <span>ITSM Board</span></div>
     </div>
-    <div class="login-error" id="loginError"></div>
-    <label class="lbl">Email Address</label>
-    <input id="loginEmail" type="email" placeholder="yourname@reachmobile.com"/>
-    <label class="lbl">Password</label>
-    <input id="loginPassword" type="password" placeholder="Enter your password"/>
-    <button class="btn btn-primary" style="width:100%;padding:12px;margin-top:4px" onclick="doLogin()">🔐 Sign In</button>
-    <div style="text-align:center;margin-top:12px;font-size:12px;color:#aaa;">Only @reachmobile.com accounts are allowed</div>
+
+    <div class="login-card">
+      <div class="input-group">
+        <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px">Welcome back 👋</div>
+        <div style="font-size:13px;color:var(--text3);margin-bottom:20px">Sign in to your team workspace</div>
+      </div>
+      <div class="login-error" id="loginError"></div>
+      <div class="input-group">
+        <label>Email Address</label>
+        <input id="loginEmail" type="email" placeholder="yourname@reachmobile.com"/>
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input id="loginPassword" type="password" placeholder="••••••••"/>
+      </div>
+      <button class="btn-login" onclick="doLogin()">Sign In →</button>
+      <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--text3)">🔒 @reachmobile.com accounts only</div>
+    </div>
+
+    <div class="welcome-badges">
+      <div class="w-badge"><span>⚡</span> Real-time sync</div>
+      <div class="w-badge"><span>📊</span> SLA tracking</div>
+      <div class="w-badge"><span>🔗</span> Power Automate</div>
+      <div class="w-badge"><span>👥</span> Team insights</div>
+    </div>
   </div>
 </div>
 
 <!-- MAIN APP -->
-<div id="mainApp" style="display:none">
-  <div class="header">
-    <div>
-      <h1>🔄 Shift Handover Board <span style="font-size:11px;opacity:.7;font-weight:400">v2.0</span></h1>
-      <p id="headerInfo"><span class="sync-dot"></span>Live • Loading...</p>
+<div id="mainApp">
+  <header class="app-header">
+    <div class="app-header-left">
+      <div class="header-logo">🔄</div>
+      <div>
+        <div class="header-brand">ShiftOps</div>
+        <div class="header-info-text" id="headerInfo"><span class="live-dot"></span>Connecting...</div>
+      </div>
+      <div class="header-shift-badge" id="shiftBadge">Loading shift...</div>
     </div>
-    <div class="hbtns">
-      <button class="hbtn" onclick="sendTeamsNotification()">📢 Notify Teams</button>
-      <button class="hbtn white" onclick="downloadCSV()">⬇ Excel</button>
-      <button class="hbtn" id="userBtn">👤</button>
-      <button class="hbtn red" onclick="doLogout()">Sign Out</button>
+    <div class="header-right">
+      <button class="hbtn" id="arStatusBtn" onclick="openAutoReminderPanel()">⏰ <span class="hide-mobile">Auto-Remind</span></button>
+      <button class="hbtn accent" onclick="sendTeamsNotification()">📢 <span class="hide-mobile">Notify</span></button>
+      <button class="hbtn" onclick="downloadCSV()">⬇ <span class="hide-mobile">Excel</span></button>
+      <button class="hbtn primary" id="userBtn">👤</button>
+      <button class="hbtn danger" onclick="doLogout()">Exit</button>
     </div>
-  </div>
-  <nav>
-    <button class="active" onclick="showView('dashboard',this)">📊 Dashboard</button>
-    <button onclick="showView('tasks',this)">📋 All Tasks</button>
-    <button onclick="showView('log',this)">🎤 Log Item</button>
-    <button onclick="showView('summary',this)">📈 Summary</button>
-    <button onclick="showView('admin',this)" id="adminTab" style="display:none">⚙️ Admin</button>
+  </header>
+
+  <nav class="app-nav">
+    <button class="nav-btn active" onclick="showView('dashboard',this)">📊 Dashboard</button>
+    <button class="nav-btn" onclick="showView('tasks',this)">📋 All Tasks</button>
+    <button class="nav-btn" onclick="showView('log',this)">🎤 Log Item</button>
+    <button class="nav-btn" onclick="showView('team',this)">👥 Team</button>
+    <button class="nav-btn" onclick="showView('summary',this)">📈 Summary</button>
+    <button class="nav-btn" onclick="showView('admin',this)" id="adminTab" style="display:none">⚙️ Admin</button>
   </nav>
+
   <div class="container">
     <div id="view-dashboard"></div>
     <div id="view-tasks" style="display:none"></div>
     <div id="view-log" style="display:none"></div>
+    <div id="view-team" style="display:none"></div>
     <div id="view-summary" style="display:none"></div>
     <div id="view-admin" style="display:none"></div>
   </div>
@@ -147,655 +506,753 @@ textarea{min-height:80px;resize:vertical;}
 <div class="notif" id="notif" style="display:none"></div>
 
 <script>
-// ── FIREBASE CONFIG ──────────────────────────────────────────────────
-const firebaseConfig = {
-  apiKey: "AIzaSyBHfudEqWBBObPB6yJEzqhSo1lo4av10TQ",
-  authDomain: "shift-handover-bd0f9.firebaseapp.com",
-  databaseURL: "https://shift-handover-bd0f9-default-rtdb.firebaseio.com",
-  projectId: "shift-handover-bd0f9",
-  storageBucket: "shift-handover-bd0f9.firebasestorage.app",
-  messagingSenderId: "219517214969",
-  appId: "1:219517214969:web:96d0390f2df83678838228"
-};
+// ── FIREBASE ──────────────────────────────────────────────────────────
+const firebaseConfig={apiKey:"AIzaSyBHfudEqWBBObPB6yJEzqhSo1lo4av10TQ",authDomain:"shift-handover-bd0f9.firebaseapp.com",databaseURL:"https://shift-handover-bd0f9-default-rtdb.firebaseio.com",projectId:"shift-handover-bd0f9",storageBucket:"shift-handover-bd0f9.firebasestorage.app",messagingSenderId:"219517214969",appId:"1:219517214969:web:96d0390f2df83678838228"};
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db=firebase.database();
 
-// ── CONSTANTS ────────────────────────────────────────────────────────
-const SHIFTS     = ['All','Morning','Afternoon','Night'];
-const PRIORITIES = ['High','Medium','Low'];
-const STATUSES   = ['Open','In Progress','Closed'];
-const ITEM_TYPES = ['Task','Email','Chat','Ticket','Note'];
-const P_COLOR    = {High:'#ef4444',Medium:'#f59e0b',Low:'#22c55e'};
-const S_COLOR    = {Open:'#f59e0b','In Progress':'#3b82f6',Closed:'#6b7280'};
-const P_ICON     = {High:'🔴',Medium:'🟡',Low:'🟢'};
-const S_ICON     = {Open:'📬','In Progress':'🔄',Closed:'✅'};
-const T_ICON     = {Task:'📋',Email:'📧',Chat:'💬',Ticket:'🎫',Note:'📝'};
-const ROLE_COLOR = {Admin:'#7c3aed',Supervisor:'#0078d4',Agent:'#22c55e'};
-let SHIFTS_CONFIG = {
-  Morning:   {ist:'6:00 AM – 3:00 PM',   est:'7:30 PM – 4:30 AM',  notifyIST:'6:15 AM',  notifyEST:'7:45 PM'},
-  Afternoon: {ist:'2:00 PM – 11:00 PM',  est:'3:30 AM – 1:30 PM',  notifyIST:'2:15 PM',  notifyEST:'3:45 AM'},
-  Night:     {ist:'9:00 PM – 6:00 AM',   est:'10:30 AM – 8:30 PM', notifyIST:'9:15 PM',  notifyEST:'10:45 AM'},
-};
+// ── CONSTANTS ─────────────────────────────────────────────────────────
+const SHIFTS=['All','Morning','Afternoon','Night'];
+const PRIORITIES=['High','Medium','Low'];
+const ITEM_TYPES=['Task','Email','Chat','Ticket','Note'];
+const STATUSES=['Open','In Progress','Waiting on L3','Waiting on Client','Restored','Closure Confirmation','Closed'];
+const S_COLOR={'Open':'#f59e0b','In Progress':'#3b82f6','Waiting on L3':'#8b5cf6','Waiting on Client':'#06b6d4','Restored':'#10b981','Closure Confirmation':'#f97316','Closed':'#6b7280'};
+const S_ICON={'Open':'📬','In Progress':'🔄','Waiting on L3':'⬆️','Waiting on Client':'🤝','Restored':'✔️','Closure Confirmation':'📋','Closed':'✅'};
+let SLA_CONFIG={High:60,Medium:240,Low:480};
+const P_COLOR={High:'#ef4444',Medium:'#f59e0b',Low:'#10b981'};
+const P_ICON={High:'🔴',Medium:'🟡',Low:'🟢'};
+const T_ICON={Task:'📋',Email:'📧',Chat:'💬',Ticket:'🎫',Note:'📝'};
+const ROLE_COLOR={Admin:'#8b5cf6',Supervisor:'#3b82f6',Agent:'#10b981'};
+const AVATAR_COLORS=['#7c3aed','#0078d4','#10b981','#ef4444','#f59e0b','#8b5cf6','#06b6d4','#f97316'];
 
-let tasks   = {};
-let users   = {};
-let curUser = null;
-let curView = 'dashboard';
-let sortBy  = 'priority';
-let recognition = null;
-let isListening = false;
+let SHIFTS_CONFIG={Morning:{ist:'6:00 AM – 3:00 PM',est:'7:30 PM – 4:30 AM',notifyIST:'6:15 AM',notifyEST:'7:45 PM'},Afternoon:{ist:'2:00 PM – 11:00 PM',est:'3:30 AM – 1:30 PM',notifyIST:'2:15 PM',notifyEST:'3:45 AM'},Night:{ist:'9:00 PM – 6:00 AM',est:'10:30 AM – 8:30 PM',notifyIST:'9:15 PM',notifyEST:'10:45 AM'}};
+let PA_WEBHOOK_URL='';
+let autoReminderConfig={enabled:false,normalIntervalMins:30,majorIntervalMins:15,lastFired:null,lastMajorFired:null};
+let autoReminderTimer=null,countdownInterval=null,autoReminderCountdown=0;
+let reminderSettings={enabled:true,autoPopup:true,thresholds:{High:30,Medium:60,Low:120},notifyOnDashboard:true};
+let tasks={},users={},curUser=null,curView='dashboard',sortBy='priority';
+let recognition=null,isListening=false,reminderBannerOpen=false,_firstRender=true;
 
-// ── HELPERS ──────────────────────────────────────────────────────────
+// ── FLOATING CHIPS ANIMATION ──────────────────────────────────────────
+function spawnChips(){
+  const msgs=['🔴 High Priority Ticket','✅ SLA Met — 48m','🔄 Assigned to Vignesh','📢 Teams notified','⏰ Auto-Remind fired','📋 Task closed','🙋 Ayyanar took task','🔗 PA webhook OK'];
+  const container=document.getElementById('floatingChips');
+  if(!container)return;
+  function spawnOne(){
+    const el=document.createElement('div');
+    el.className='chip';
+    el.innerHTML=msgs[Math.floor(Math.random()*msgs.length)].replace(/(🔴|✅|🔄|📢|⏰|📋|🙋|🔗)/,'<span>$1</span>');
+    el.style.left=Math.random()*90+'%';
+    const dur=8+Math.random()*6;
+    el.style.animationDuration=dur+'s';
+    el.style.animationDelay='0s';
+    container.appendChild(el);
+    setTimeout(()=>el.remove(),dur*1000);
+  }
+  for(let i=0;i<4;i++)setTimeout(spawnOne,i*1500);
+  setInterval(spawnOne,2000);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────
 function uid(){return db.ref().push().key;}
 function fmt(d){return d?new Date(d).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—';}
 function esc(s){return s?(s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''; }
-function badge(t,c){return `<span class="badge" style="background:${c}22;color:${c}">${t}</span>`;}
-function getCurrentShift(){
-  const h=new Date().getHours();
-  if(h>=6&&h<14)return 'Morning';
-  if(h>=14&&h<21)return 'Afternoon';
-  return 'Night';
-}
+function badge(t,c,icon=''){return `<span class="badge" style="background:${c}18;color:${c};border:1px solid ${c}30">${icon?icon+' ':''}${t}</span>`;}
+function getCurrentShift(){const h=new Date().getHours();if(h>=6&&h<14)return'Morning';if(h>=14&&h<21)return'Afternoon';return'Night';}
+function isTerminal(s){return s==='Closed';}
 function notify(msg,type='success'){
   const n=document.getElementById('notif');
   n.textContent=msg;
-  n.style.background=type==='error'?'#ef4444':type==='info'?'#3b82f6':type==='warn'?'#f59e0b':'#22c55e';
-  n.style.display='block';
-  setTimeout(()=>n.style.display='none',3500);
+  const colors={error:'#ef4444',info:'#3b82f6',warn:'#f59e0b',success:'#10b981'};
+  n.style.background=colors[type]||colors.success;
+  n.style.display='block';setTimeout(()=>n.style.display='none',3500);
 }
+function fmtMins(m){if(!m&&m!==0)return'—';if(m<60)return m+'m';return Math.floor(m/60)+'h '+(m%60?m%60+'m':'');}
 function taskArr(){
-  const pOrder={High:0,Medium:1,Low:2};
-  const sOrder={Open:0,'In Progress':1,Closed:2};
+  const pO={High:0,Medium:1,Low:2};const sO={'Open':0,'In Progress':1,'Waiting on L3':2,'Waiting on Client':3,'Restored':4,'Closure Confirmation':5,'Closed':6};
   let arr=Object.values(tasks||{});
-  if(sortBy==='priority') arr.sort((a,b)=>(pOrder[a.priority]??1)-(pOrder[b.priority]??1)||sOrder[a.status]-sOrder[b.status]);
-  else if(sortBy==='status') arr.sort((a,b)=>sOrder[a.status]-sOrder[b.status]);
+  if(sortBy==='priority')arr.sort((a,b)=>(pO[a.priority]??1)-(pO[b.priority]??1)||sO[a.status]-sO[b.status]);
+  else if(sortBy==='status')arr.sort((a,b)=>sO[a.status]-sO[b.status]);
   else arr.sort((a,b)=>new Date(b.date)-new Date(a.date));
   return arr;
 }
+function getActiveUsers(){return Object.values(users||{}).filter(u=>u.active);}
+function avatarColor(name){let h=0;for(let i=0;i<(name||'').length;i++)h=name.charCodeAt(i)+((h<<5)-h);return AVATAR_COLORS[Math.abs(h)%AVATAR_COLORS.length];}
+function avatarInitials(name){return(name||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();}
+function assignedCount(name){return Object.values(tasks).filter(t=>t.assignedTo===name&&!isTerminal(t.status)).length;}
+function closedToday(){const today=new Date().toDateString();return Object.values(tasks).filter(t=>isTerminal(t.status)&&t.dateClosed&&new Date(t.dateClosed).toDateString()===today).length;}
+function unassignedCount(){return Object.values(tasks).filter(t=>!isTerminal(t.status)&&!t.assignedTo).length;}
 
-// ── FIREBASE LISTENERS ───────────────────────────────────────────────
+// ── SLA ───────────────────────────────────────────────────────────────
+function getSLAInfo(t){
+  const lm=SLA_CONFIG[t.priority]||240;
+  const start=new Date(t.date).getTime(),end=t.dateClosed?new Date(t.dateClosed).getTime():Date.now();
+  const el=Math.floor((end-start)/60000);
+  const pct=Math.min(100,Math.round(el/lm*100));
+  const rem=lm-el;
+  return{limitMins:lm,elapsedMins:el,pct,remaining:rem,breached:el>lm&&!isTerminal(t.status),warning:!isTerminal(t.status)&&pct>=75&&el<=lm};
+}
+function slaBarHTML(t){
+  const s=getSLAInfo(t);
+  if(isTerminal(t.status)){const ok=s.elapsedMins<=s.limitMins;return`<div class="sla-row"><div class="sla-bar-wrap"><div class="sla-bar-fill" style="width:${s.pct}%;background:${ok?'#10b981':'#ef4444'}"></div></div><span class="sla-label" style="color:${ok?'#10b981':'#ef4444'}">${ok?'✅ Met':'❌ Breached'}</span></div>`;}
+  const col=s.breached?'#ef4444':s.warning?'#f59e0b':'#7c3aed';
+  const lbl=s.breached?`⚡ +${fmtMins(Math.abs(s.remaining))} over`:s.remaining<=0?'⚠️ Due now':`${fmtMins(s.remaining)} left`;
+  return`<div class="sla-row"><div class="sla-bar-wrap"><div class="sla-bar-fill" style="width:${s.pct}%;background:${col}"></div></div><span class="sla-label" style="color:${col}">${lbl}</span></div>`;
+}
+
+// ── POWER AUTOMATE ────────────────────────────────────────────────────
+async function triggerPA(task,eventType,extra={}){
+  if(!PA_WEBHOOK_URL)return;
+  const sh=task.shift==='All'?getCurrentShift():task.shift;const cfg=SHIFTS_CONFIG[sh]||{};const sla=getSLAInfo(task);
+  try{await fetch(PA_WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},mode:'no-cors',body:JSON.stringify({eventType,task:{id:task.id,title:task.title,description:task.description||'',type:task.type,shift:task.shift,priority:task.priority,status:task.status,submittedBy:task.submittedBy,assignedTo:task.assignedTo||'Unassigned',date:task.date,slaMinutes:SLA_CONFIG[task.priority],slaBreached:sla.breached,slaRemaining:sla.remaining},shiftInfo:{ist:cfg.ist||'',est:cfg.est||''},appUrl:'https://ayyanartest-ui.github.io/shift-handover',timestamp:new Date().toISOString(),...extra})});}catch(e){}
+}
+
+// ── AUTO-REMINDER ENGINE ──────────────────────────────────────────────
+function buildReminderMessage(list,isMajor){
+  const sh=getCurrentShift();const cfg=SHIFTS_CONFIG[sh]||{};
+  const grouped={};list.forEach(t=>{const k=t.assignedTo||'⚠️ UNASSIGNED';if(!grouped[k])grouped[k]=[];grouped[k].push(t);});
+  let msg=isMajor?`🚨 URGENT ALERT — ${sh} Shift | ${new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}`:
+    `⏰ PENDING REMINDER — ${sh} Shift | ${new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}`;
+  msg+=`\nIST: ${cfg.ist||''} | EST: ${cfg.est||''}\n\n${list.length} item(s) need attention:\n`;
+  Object.entries(grouped).forEach(([assignee,items])=>{
+    const fn=assignee.split(' ')[0];
+    msg+=`\n👤 @${fn} — ${items.length} item${items.length>1?'s':''} pending:\n`;
+    items.forEach(t=>{const sla=getSLAInfo(t);msg+=`  ${P_ICON[t.priority]} ${T_ICON[t.type]} ${t.title}\n     ${t.status} | ${sla.breached?'🔴 BREACHED +'+fmtMins(Math.abs(sla.remaining)):'⏱ '+fmtMins(sla.remaining)+' left'}\n`;});
+  });
+  msg+=`\n${isMajor?'🚨 Immediate action required!':'Please review and update status.'}\n👉 https://ayyanartest-ui.github.io/shift-handover`;
+  return msg;
+}
+async function fireAutoReminder(isMajor=false){
+  const active=taskArr().filter(t=>!isTerminal(t.status));if(!active.length)return;
+  const major=active.filter(t=>t.priority==='High'||getSLAInfo(t).breached);
+  const list=isMajor?major:active;if(!list.length)return;
+  const msg=buildReminderMessage(list,isMajor);
+  if(PA_WEBHOOK_URL){try{await fetch(PA_WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},mode:'no-cors',body:JSON.stringify({eventType:isMajor?'major_reminder':'scheduled_reminder',message:msg,assignees:[...new Set(list.map(t=>t.assignedTo).filter(Boolean))],taskCount:list.length,highCount:list.filter(t=>t.priority==='High').length,timestamp:new Date().toISOString()})});}catch(e){}}
+  if(isMajor)autoReminderConfig.lastMajorFired=new Date().toISOString();else autoReminderConfig.lastFired=new Date().toISOString();
+  db.ref('config/autoReminder').update({lastFired:autoReminderConfig.lastFired,lastMajorFired:autoReminderConfig.lastMajorFired});
+  notify(isMajor?`🚨 Major alert sent for ${list.length} tasks!`:`📢 Reminder sent for ${list.length} tasks!`,'info');
+  window._lastReminderMsg=msg;
+}
+function startAutoReminderEngine(){
+  stopAutoReminderEngine();if(!autoReminderConfig.enabled)return;
+  const nm=autoReminderConfig.normalIntervalMins*60*1000,mm=autoReminderConfig.majorIntervalMins*60*1000;
+  autoReminderCountdown=Math.min(nm,mm);updateARButton();
+  countdownInterval=setInterval(()=>{autoReminderCountdown=Math.max(0,autoReminderCountdown-1000);updateARButton();},1000);
+  autoReminderTimer=setInterval(()=>fireAutoReminder(false),nm);
+  window._majorTimer=setInterval(()=>{const m=taskArr().filter(t=>!isTerminal(t.status)&&(t.priority==='High'||getSLAInfo(t).breached));if(m.length)fireAutoReminder(true);},mm);
+}
+function stopAutoReminderEngine(){
+  if(autoReminderTimer){clearInterval(autoReminderTimer);autoReminderTimer=null;}
+  if(window._majorTimer){clearInterval(window._majorTimer);window._majorTimer=null;}
+  if(countdownInterval){clearInterval(countdownInterval);countdownInterval=null;}
+  autoReminderCountdown=0;updateARButton();
+}
+function updateARButton(){
+  const btn=document.getElementById('arStatusBtn');if(!btn)return;
+  if(autoReminderConfig.enabled){
+    const s=Math.ceil(autoReminderCountdown/1000),m=Math.floor(s/60),ss=s%60;
+    btn.textContent=`⏰ ${m}:${ss.toString().padStart(2,'0')}`;
+    btn.className='hbtn ar-on';
+  }else{btn.textContent='⏰ Auto-Remind';btn.className='hbtn';}
+}
+
+// ── STATUS HISTORY ────────────────────────────────────────────────────
+function addStatusHistory(taskId,from,to,by){db.ref(`tasks/${taskId}/history`).push({from,to,by,at:new Date().toISOString(),id:uid()});}
+
+// ── FIREBASE LISTENERS ────────────────────────────────────────────────
 function startListeners(){
-  // Tasks — real-time
-  db.ref('tasks').on('value', snap=>{
-    tasks = snap.val()||{};
-    render(curView);
-    updateHeader();
-  });
-  // Shifts config
-  db.ref('config/shifts').on('value', snap=>{
-    if(snap.val()) Object.assign(SHIFTS_CONFIG, snap.val());
-  });
+  db.ref('tasks').on('value',snap=>{tasks=snap.val()||{};render(curView);updateHeader();});
+  db.ref('config/shifts').on('value',snap=>{if(snap.val())Object.assign(SHIFTS_CONFIG,snap.val());});
+  db.ref('config/sla').on('value',snap=>{if(snap.val())Object.assign(SLA_CONFIG,snap.val());});
+  db.ref('config/paWebhook').on('value',snap=>{if(snap.val())PA_WEBHOOK_URL=snap.val();});
+  db.ref('config/reminders').on('value',snap=>{if(snap.val())Object.assign(reminderSettings,snap.val());});
+  db.ref('config/autoReminder').on('value',snap=>{if(snap.val()){const prev=autoReminderConfig.enabled;Object.assign(autoReminderConfig,snap.val());if(autoReminderConfig.enabled&&!prev)startAutoReminderEngine();else if(!autoReminderConfig.enabled&&prev)stopAutoReminderEngine();updateARButton();}});
 }
 
-// ── INIT ─────────────────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────────────────
 async function init(){
-  // Load users from Firebase once
-  const snap = await db.ref('users').get();
-  if(!snap.val()){
-    // First run — seed default users
-    await seedDefaultUsers();
-  } else {
-    users = snap.val();
-  }
+  spawnChips();
+  const snap=await db.ref('users').get();
+  if(!snap.val())await seedDefaultUsers();else users=snap.val();
   document.getElementById('loadingScreen').style.display='none';
-  // Check saved session
-  const saved = sessionStorage.getItem('ho_user');
-  if(saved){
-    curUser=JSON.parse(saved);
-    bootApp();
-  } else {
-    document.getElementById('loginScreen').style.display='flex';
-  }
+  const saved=sessionStorage.getItem('ho_user');
+  if(saved){curUser=JSON.parse(saved);bootApp();}
+  else{document.getElementById('welcomeScreen').style.display='flex';}
 }
-
 async function seedDefaultUsers(){
-  const defaults = {
-    u1:{id:'u1',name:'Admin User',    email:'admin@reachmobile.com', password:'Admin@123',  role:'Admin',      shift:'All',       active:true},
-    u2:{id:'u2',name:'Ravi Kumar',    email:'ravi@reachmobile.com',  password:'Ravi@123',   role:'Supervisor', shift:'Morning',   active:true},
-    u3:{id:'u3',name:'Priya Sharma',  email:'priya@reachmobile.com', password:'Priya@123',  role:'Agent',      shift:'Morning',   active:true},
-    u4:{id:'u4',name:'Arun Mehta',    email:'arun@reachmobile.com',  password:'Arun@123',   role:'Agent',      shift:'Afternoon', active:true},
-    u5:{id:'u5',name:'Sneha Reddy',   email:'sneha@reachmobile.com', password:'Sneha@123',  role:'Supervisor', shift:'Afternoon', active:true},
-    u6:{id:'u6',name:'Kiran Patel',   email:'kiran@reachmobile.com', password:'Kiran@123',  role:'Agent',      shift:'Night',     active:true},
-    u7:{id:'u7',name:'Divya Thomas',  email:'divya@reachmobile.com', password:'Divya@123',  role:'Agent',      shift:'Night',     active:true},
-  };
-  await db.ref('users').set(defaults);
-  users = defaults;
+  const d={u1:{id:'u1',name:'Admin User',email:'admin@reachmobile.com',password:'Admin@123',role:'Admin',shift:'All',active:true},u2:{id:'u2',name:'Ravi Kumar',email:'ravi@reachmobile.com',password:'Ravi@123',role:'Supervisor',shift:'Morning',active:true},u3:{id:'u3',name:'Ayyanar',email:'ayyanar@reachmobile.com',password:'Ayyanar@123',role:'Agent',shift:'Morning',active:true},u4:{id:'u4',name:'Vignesh',email:'vignesh@reachmobile.com',password:'Vignesh@123',role:'Agent',shift:'Afternoon',active:true},u5:{id:'u5',name:'Sneha Reddy',email:'sneha@reachmobile.com',password:'Sneha@123',role:'Supervisor',shift:'Afternoon',active:true},u6:{id:'u6',name:'Kiran Patel',email:'kiran@reachmobile.com',password:'Kiran@123',role:'Agent',shift:'Night',active:true},u7:{id:'u7',name:'Divya Thomas',email:'divya@reachmobile.com',password:'Divya@123',role:'Agent',shift:'Night',active:true}};
+  await db.ref('users').set(d);users=d;
 }
 
-// ── AUTH ─────────────────────────────────────────────────────────────
+// ── AUTH ──────────────────────────────────────────────────────────────
 async function doLogin(){
-  const email    = document.getElementById('loginEmail').value.trim().toLowerCase();
-  const password = document.getElementById('loginPassword').value;
-  const errEl    = document.getElementById('loginError');
-  errEl.style.display='none';
-  if(!email.endsWith('@reachmobile.com')){
-    errEl.textContent='❌ Only @reachmobile.com accounts are allowed.';
-    errEl.style.display='block';return;
-  }
-  // Reload users fresh from Firebase
-  const snap = await db.ref('users').get();
-  users = snap.val()||{};
-  const user = Object.values(users).find(u=>u.email.toLowerCase()===email && u.password===password);
+  const email=document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password=document.getElementById('loginPassword').value;
+  const errEl=document.getElementById('loginError');errEl.style.display='none';
+  if(!email.endsWith('@reachmobile.com')){errEl.textContent='❌ Only @reachmobile.com accounts are allowed.';errEl.style.display='block';return;}
+  const snap=await db.ref('users').get();users=snap.val()||{};
+  const user=Object.values(users).find(u=>u.email.toLowerCase()===email&&u.password===password);
   if(!user){errEl.textContent='❌ Invalid email or password.';errEl.style.display='block';return;}
   if(!user.active){errEl.textContent='❌ Account inactive. Contact admin.';errEl.style.display='block';return;}
-  curUser=user;
-  sessionStorage.setItem('ho_user',JSON.stringify(user));
-  bootApp();
+  curUser=user;sessionStorage.setItem('ho_user',JSON.stringify(user));bootApp();
 }
-
-function doLogout(){
-  if(!confirm('Sign out?'))return;
-  sessionStorage.removeItem('ho_user');
-  curUser=null;
-  document.getElementById('mainApp').style.display='none';
-  document.getElementById('loginScreen').style.display='flex';
-  document.getElementById('loginEmail').value='';
-  document.getElementById('loginPassword').value='';
-}
-
-document.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none')doLogin();
-});
-
+function doLogout(){if(!confirm('Sign out?'))return;stopAutoReminderEngine();sessionStorage.removeItem('ho_user');curUser=null;_firstRender=true;document.getElementById('mainApp').style.display='none';document.getElementById('welcomeScreen').style.display='flex';document.getElementById('loginEmail').value='';document.getElementById('loginPassword').value='';}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('welcomeScreen').style.display!=='none')doLogin();});
 function bootApp(){
-  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('welcomeScreen').style.display='none';
   document.getElementById('mainApp').style.display='block';
-  if(curUser.role==='Admin') document.getElementById('adminTab').style.display='inline-block';
+  if(curUser.role==='Admin')document.getElementById('adminTab').style.display='flex';
   document.getElementById('userBtn').textContent='👤 '+curUser.name.split(' ')[0];
   startListeners();
+  setInterval(()=>{if(curView==='dashboard')renderDashboard();},60000);
 }
-
 function updateHeader(){
   if(!curUser)return;
-  const sh=getCurrentShift();
-  const cfg=SHIFTS_CONFIG[sh]||{};
-  const open=Object.values(tasks||{}).filter(t=>t.status==='Open').length;
-  document.getElementById('headerInfo').innerHTML=
-    `<span class="sync-dot"></span>Live • ${curUser.name} • ${sh} Shift | IST: ${cfg.ist||''} | EST: ${cfg.est||''} | Open: ${open}`;
+  const sh=getCurrentShift();const cfg=SHIFTS_CONFIG[sh]||{};
+  const open=Object.values(tasks||{}).filter(t=>!isTerminal(t.status)).length;
+  const breached=Object.values(tasks||{}).filter(t=>getSLAInfo(t).breached).length;
+  const mine=Object.values(tasks||{}).filter(t=>t.assignedTo===curUser.name&&!isTerminal(t.status)).length;
+  const shBadge=document.getElementById('shiftBadge');if(shBadge)shBadge.textContent=`${sh==='Morning'?'🌅':sh==='Afternoon'?'🌆':'🌙'} ${sh} Shift`;
+  document.getElementById('headerInfo').innerHTML=`<span class="live-dot"></span><b>${curUser.name}</b> · Active: <b>${open}</b> · Mine: <b>${mine}</b>${breached?` · <span style="color:#ef4444;font-weight:700">🔴 ${breached} SLA</span>`:''}`;
 }
 
-// ── VIEW ROUTER ──────────────────────────────────────────────────────
+// ── VIEW ROUTER ───────────────────────────────────────────────────────
 function showView(v,btn){
   curView=v;
-  ['dashboard','tasks','log','summary','admin'].forEach(x=>{
-    document.getElementById('view-'+x).style.display=x===v?'block':'none';
-  });
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  ['dashboard','tasks','log','team','summary','admin'].forEach(x=>{document.getElementById('view-'+x).style.display=x===v?'block':'none';});
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
-  else{const btns=document.querySelectorAll('nav button');const idx={dashboard:0,tasks:1,log:2,summary:3,admin:4};if(btns[idx[v]])btns[idx[v]].classList.add('active');}
   render(v);
 }
 function render(v){
-  if(v==='dashboard')renderDashboard();
-  if(v==='tasks')renderTasks();
-  if(v==='log')renderLog();
-  if(v==='summary')renderSummary();
-  if(v==='admin')renderAdmin();
+  if(v==='dashboard')renderDashboard();if(v==='tasks')renderTasks();if(v==='log')renderLog();
+  if(v==='team')renderTeam();if(v==='summary')renderSummary();if(v==='admin')renderAdmin();
 }
 
-// ── DASHBOARD ────────────────────────────────────────────────────────
+// ── DASHBOARD ─────────────────────────────────────────────────────────
 function renderDashboard(){
   if(!curUser)return;
-  const sh=getCurrentShift();
-  const cfg=SHIFTS_CONFIG[sh]||{};
+  if(_firstRender&&Object.keys(tasks).length>0){_firstRender=false;checkAutoPopup();}
+  const sh=getCurrentShift();const cfg=SHIFTS_CONFIG[sh]||{};
   const all=taskArr();
-  const open=all.filter(t=>t.status==='Open');
-  const ip=all.filter(t=>t.status==='In Progress');
-  const closed=all.filter(t=>t.status==='Closed');
-  const shiftActive=all.filter(t=>(t.shift===sh||t.shift==='All')&&t.status!=='Closed');
+  const active=all.filter(t=>!isTerminal(t.status));
+  const breached=all.filter(t=>getSLAInfo(t).breached);
+  const mine=all.filter(t=>t.assignedTo===curUser.name&&!isTerminal(t.status));
+  const shiftActive=all.filter(t=>(t.shift===sh||t.shift==='All')&&!isTerminal(t.status));
+
   document.getElementById('view-dashboard').innerHTML=`
-  <div class="announce"><strong>👋 Welcome, ${esc(curUser.name)}!</strong>
-  ${sh} Shift | IST: ${cfg.ist||''} | EST: ${cfg.est||''} | Notify: ${cfg.notifyIST||''} IST</div>
-  <div class="stat-grid">
-    ${[['Total',all.length,'#6264A7'],['Open',open.length,'#f59e0b'],['In Progress',ip.length,'#3b82f6'],['Closed',closed.length,'#6b7280']].map(([l,v,c])=>`
-    <div class="stat-card" style="border-top:4px solid ${c}"><div class="stat-num" style="color:${c}">${v}</div><div class="stat-label">${l}</div></div>`).join('')}
+  <div class="welcome-banner">
+    <div class="wb-left">
+      <h2>Good ${new Date().getHours()<12?'morning':new Date().getHours()<18?'afternoon':'evening'}, ${esc(curUser.name.split(' ')[0])} 👋</h2>
+      <p>Here's your shift overview · <b style="color:var(--accent)">${sh} Shift</b></p>
+    </div>
+    <div class="wb-right">
+      <div class="shift-pill">⏰ IST: <span>${cfg.ist||'—'}</span></div>
+      <div class="shift-pill">🌍 EST: <span>${cfg.est||'—'}</span></div>
+      <div class="shift-pill">🔔 Notify: <span>${cfg.notifyIST||'—'}</span></div>
+    </div>
   </div>
+
+  ${reminderBannerHTML()}
+
+  <div class="stat-grid">
+    <div class="stat-card" style="--stat-color:#7c3aed"><div class="stat-num">${active.length}</div><div class="stat-label">Active Tasks</div><div class="stat-sub">${shiftActive.length} in current shift</div><div class="stat-icon">📋</div></div>
+    <div class="stat-card" style="--stat-color:#ef4444"><div class="stat-num">${breached.length}</div><div class="stat-label">SLA Breached</div><div class="stat-sub">${breached.length?'Needs immediate action':'All within SLA'}</div><div class="stat-icon">🔴</div></div>
+    <div class="stat-card" style="--stat-color:#3b82f6"><div class="stat-num">${mine.length}</div><div class="stat-label">My Tasks</div><div class="stat-sub">Assigned to me</div><div class="stat-icon">👤</div></div>
+    <div class="stat-card" style="--stat-color:#f59e0b"><div class="stat-num">${unassignedCount()}</div><div class="stat-label">Unassigned</div><div class="stat-sub">Need an owner</div><div class="stat-icon">⚠️</div></div>
+  </div>
+
+  ${mine.length?`<div class="card" style="border-color:rgba(6,182,212,.3)">
+    <div class="card-header"><div class="card-title"><div class="card-title-icon" style="background:rgba(6,182,212,.15)">👤</div>My Active Tasks (${mine.length})</div></div>
+    ${mine.map(t=>taskCardHTML(t)).join('')}
+  </div>`:''}
+
+  ${breached.length?`<div class="card" style="border-color:rgba(239,68,68,.4)">
+    <div class="card-header"><div class="card-title" style="color:#ef4444"><div class="card-title-icon" style="background:rgba(239,68,68,.15)">🔴</div>SLA Breached — Act Now (${breached.length})</div></div>
+    ${breached.map(t=>taskCardHTML(t)).join('')}
+  </div>`:''}
+
   <div class="card">
-    <div class="section-title">⚠️ ${sh} Shift — Active Items (${shiftActive.length})
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        ${['priority','newest','status'].map(s=>`<button class="sort-btn${sortBy===s?' active':''}" onclick="sortBy='${s}';renderDashboard()">${{priority:'🎯 Priority',newest:'🕐 Newest',status:'📊 Status'}[s]}</button>`).join('')}
+    <div class="card-header">
+      <div class="card-title"><div class="card-title-icon">⚡</div>${sh} Shift — Active (${shiftActive.length})</div>
+      <div class="sort-pills">
+        ${['priority','newest','status'].map(s=>`<button class="sort-pill${sortBy===s?' active':''}" onclick="sortBy='${s}';renderDashboard()">${{priority:'🎯 Priority',newest:'🕐 Recent',status:'📊 Status'}[s]}</button>`).join('')}
       </div>
     </div>
-    ${shiftActive.length===0?'<div class="empty">✅ No active items for this shift!</div>':shiftActive.map(t=>taskCardHTML(t)).join('')}
-  </div>
-  <div class="card">
-    <div class="section-title">📋 Recent Items
-      <button class="btn btn-primary btn-sm" onclick="showView('tasks')">View All →</button>
-    </div>
-    ${all.slice(0,5).map(t=>taskCardHTML(t)).join('')}
+    ${shiftActive.length===0?`<div class="empty"><div class="empty-icon">✅</div><div>All clear! No active tasks for this shift.</div></div>`:shiftActive.map(t=>taskCardHTML(t)).join('')}
   </div>`;
 }
 
 function taskCardHTML(t){
-  return `<div class="task-card" style="border-left-color:${P_COLOR[t.priority]||'#6264A7'}" onclick="openTask('${t.id}')">
+  const sla=getSLAInfo(t);
+  const cls=sla.breached?'sla-breach':sla.warning?'sla-warning':t.assignedTo===curUser.name?'my-task':'';
+  return`<div class="task-card ${cls}" style="border-left-color:${P_COLOR[t.priority]}" onclick="openTask('${t.id}')">
     <div class="task-top">
       <div class="task-title">${T_ICON[t.type]||'📋'} ${esc(t.title)}</div>
       <div class="badges">
-        ${badge(P_ICON[t.priority]+' '+t.priority,P_COLOR[t.priority])}
-        ${badge(S_ICON[t.status]+' '+t.status,S_COLOR[t.status])}
-        ${badge(t.type,'#6264A7')}
-        ${badge(t.shift,'#0891b2')}
+        ${badge(t.priority,P_COLOR[t.priority],P_ICON[t.priority])}
+        ${badge(t.status,S_COLOR[t.status]||'#888',S_ICON[t.status])}
+        ${badge(t.shift,'#06b6d4')}
       </div>
     </div>
-    ${t.description?`<div style="font-size:12px;color:#666;margin:5px 0 2px">${esc(t.description).substring(0,85)}${t.description.length>85?'...':''}</div>`:''}
-    <div class="task-meta">By ${esc(t.submittedBy)} • ${fmt(t.date)}${t.assignedTo?` • 🔄 ${esc(t.assignedTo)}`:''}</div>
+    ${slaBarHTML(t)}
+    ${t.description?`<div style="font-size:12px;color:var(--text3);margin:3px 0 6px;line-height:1.5">${esc(t.description).substring(0,85)}${t.description.length>85?'…':''}</div>`:''}
+    <div class="task-meta">
+      <span>By ${esc(t.submittedBy)} · ${fmt(t.date)}</span>
+      ${t.assignedTo?`<span class="assignee-pill"><div class="avatar" style="width:18px;height:18px;font-size:8px;background:${avatarColor(t.assignedTo)}">${avatarInitials(t.assignedTo)}</div>${esc(t.assignedTo)}</span>`:`<span class="assignee-pill unassigned">⚠️ Unassigned</span>`}
+      <button class="assign-btn-inline" onclick="event.stopPropagation();openAssignModal('${t.id}')">👤 ${t.assignedTo?'Re-assign':'Assign'}</button>
+    </div>
   </div>`;
 }
 
-// ── ALL TASKS ────────────────────────────────────────────────────────
+// ── ALL TASKS ─────────────────────────────────────────────────────────
 function renderTasks(){
-  const sf  = document.getElementById('f-shift')   ?.value||'All';
-  const stf = document.getElementById('f-status')  ?.value||'All';
-  const pf  = document.getElementById('f-priority')?.value||'All';
-  const tf  = document.getElementById('f-type')    ?.value||'All';
-  const filtered=taskArr().filter(t=>
-    (sf==='All'||t.shift===sf)&&(stf==='All'||t.status===stf)&&
-    (pf==='All'||t.priority===pf)&&(tf==='All'||t.type===tf));
+  const sf=document.getElementById('f-shift')?.value||'All';const stf=document.getElementById('f-status')?.value||'All';
+  const pf=document.getElementById('f-priority')?.value||'All';const tf=document.getElementById('f-type')?.value||'All';const af=document.getElementById('f-assignee')?.value||'All';
+  const filtered=taskArr().filter(t=>(sf==='All'||t.shift===sf)&&(stf==='All'||t.status===stf)&&(pf==='All'||t.priority===pf)&&(tf==='All'||t.type===tf)&&(af==='All'||(af==='Unassigned'?!t.assignedTo:t.assignedTo===af)));
+  const aopts=getActiveUsers().map(u=>`<option value="${esc(u.name)}"${af===u.name?' selected':''}>${esc(u.name)}</option>`).join('');
   document.getElementById('view-tasks').innerHTML=`
   <div class="card">
-    <div class="section-title">🔍 Filter & Sort
-      <div style="display:flex;gap:6px">
-        ${['priority','newest','status'].map(s=>`<button class="sort-btn${sortBy===s?' active':''}" onclick="sortBy='${s}';renderTasks()">${{priority:'🎯',newest:'🕐',status:'📊'}[s]}</button>`).join('')}
-      </div>
+    <div class="card-header"><div class="card-title"><div class="card-title-icon">🔍</div>Filter & Sort</div>
+      <div class="sort-pills">${['priority','newest','status'].map(s=>`<button class="sort-pill${sortBy===s?' active':''}" onclick="sortBy='${s}';renderTasks()">${{priority:'🎯',newest:'🕐',status:'📊'}[s]}</button>`).join('')}</div>
     </div>
-    <div class="filter-row">
-      <div><label class="lbl">Shift</label><select id="f-shift" onchange="renderTasks()"><option>All</option>${SHIFTS.map(s=>`<option${sf===s?' selected':''}>${s}</option>`).join('')}</select></div>
-      <div><label class="lbl">Status</label><select id="f-status" onchange="renderTasks()"><option>All</option>${STATUSES.map(s=>`<option${stf===s?' selected':''}>${s}</option>`).join('')}</select></div>
-      <div><label class="lbl">Priority</label><select id="f-priority" onchange="renderTasks()"><option>All</option>${PRIORITIES.map(p=>`<option${pf===p?' selected':''}>${p}</option>`).join('')}</select></div>
-      <div><label class="lbl">Type</label><select id="f-type" onchange="renderTasks()"><option>All</option>${ITEM_TYPES.map(t=>`<option${tf===t?' selected':''}>${t}</option>`).join('')}</select></div>
+    <div class="filter-grid">
+      <div><label class="form-label">Shift</label><select id="f-shift" onchange="renderTasks()"><option>All</option>${SHIFTS.map(s=>`<option${sf===s?' selected':''}>${s}</option>`).join('')}</select></div>
+      <div><label class="form-label">Status</label><select id="f-status" onchange="renderTasks()"><option>All</option>${STATUSES.map(s=>`<option${stf===s?' selected':''}>${s}</option>`).join('')}</select></div>
+      <div><label class="form-label">Priority</label><select id="f-priority" onchange="renderTasks()"><option>All</option>${PRIORITIES.map(p=>`<option${pf===p?' selected':''}>${p}</option>`).join('')}</select></div>
+      <div><label class="form-label">Type</label><select id="f-type" onchange="renderTasks()"><option>All</option>${ITEM_TYPES.map(t=>`<option${tf===t?' selected':''}>${t}</option>`).join('')}</select></div>
+      <div><label class="form-label">Assignee</label><select id="f-assignee" onchange="renderTasks()"><option value="All">All</option><option value="Unassigned">⚠️ Unassigned</option>${aopts}</select></div>
     </div>
   </div>
-  <div style="font-size:13px;color:#888;margin-bottom:8px">${filtered.length} item(s) found</div>
-  ${filtered.length===0?'<div class="card empty">No items match this filter.</div>':filtered.map(t=>taskCardHTML(t)).join('')}`;
+  <div style="font-size:12px;color:var(--text3);margin-bottom:10px">${filtered.length} item(s) found</div>
+  ${filtered.length===0?`<div class="card"><div class="empty"><div class="empty-icon">🔍</div>No items match this filter.</div></div>`:filtered.map(t=>taskCardHTML(t)).join('')}`;
 }
 
-// ── LOG ITEM ─────────────────────────────────────────────────────────
+// ── LOG ITEM ──────────────────────────────────────────────────────────
 function renderLog(){
+  const au=getActiveUsers();
   document.getElementById('view-log').innerHTML=`
   <div class="card">
-    <div class="section-title">🎤 Log Handover Item</div>
+    <div class="card-header"><div class="card-title"><div class="card-title-icon">🎤</div>Log Handover Item</div></div>
     <div class="voice-area">
-      <p style="font-size:13px;color:#555;margin-bottom:10px">Tap mic and speak — app auto-fills the form!</p>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:12px">🎤 Tap mic — voice auto-fills the form</div>
       <button class="mic-btn" id="micBtn" onclick="toggleVoice()">🎤</button>
-      <div id="aiStatus" style="font-size:12px;color:#6264A7;font-weight:600;margin-top:8px"></div>
+      <div id="aiStatus" style="font-size:12px;color:var(--primary-light);font-weight:600;margin-top:10px"></div>
       <div class="transcript-box" id="transcriptBox">Your speech will appear here...</div>
     </div>
     <div class="row2">
-      <div><label class="lbl">Your Name</label><input id="f-name" value="${esc(curUser.name)}" readonly style="background:#f5f5f5"/></div>
-      <div><label class="lbl">Item Type *</label><select id="f-type-log">${ITEM_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Logged By</label><input value="${esc(curUser.name)}" readonly style="opacity:.6"/></div>
+      <div class="form-group"><label class="form-label">Item Type</label><select id="f-type-log">${ITEM_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></div>
     </div>
-    <label class="lbl">Title *</label>
-    <input id="f-title" placeholder="e.g. Server backup failed"/>
-    <label class="lbl">Description / Notes</label>
-    <textarea id="f-desc" placeholder="Describe what's pending and context for next shift..."></textarea>
+    <div class="form-group"><label class="form-label">Title *</label><input id="f-title" placeholder="e.g. Server backup failed on NODE-04"/></div>
+    <div class="form-group"><label class="form-label">Description / Context</label><textarea id="f-desc" placeholder="Describe what's pending and what the next shift needs to know..."></textarea></div>
     <div class="row3">
-      <div><label class="lbl">Shift</label><select id="f-shift-log">${SHIFTS.map(s=>`<option${s===curUser.shift?' selected':''}>${s}</option>`).join('')}</select></div>
-      <div><label class="lbl">Priority</label><select id="f-pri">${PRIORITIES.map(p=>`<option${p==='Medium'?' selected':''}>${p}</option>`).join('')}</select></div>
-      <div><label class="lbl">Status</label><select id="f-status-log"><option>Open</option></select></div>
+      <div class="form-group"><label class="form-label">Shift</label><select id="f-shift-log">${SHIFTS.map(s=>`<option${s===curUser.shift?' selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Priority</label><select id="f-pri">${PRIORITIES.map(p=>`<option${p==='Medium'?' selected':''}>${p}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Initial Status</label><select id="f-status-log"><option>Open</option></select></div>
     </div>
-    <button class="btn btn-primary" onclick="submitTask()">✅ Submit Item</button>
+    <div class="form-group"><label class="form-label">Assign To (optional)</label>
+      <select id="f-assign">
+        <option value="">— Assign to team member —</option>
+        ${au.map(u=>`<option value="${esc(u.name)}">${esc(u.name)} (${u.shift}) — ${assignedCount(u.name)} active</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Handover Note</label><textarea id="f-handover-note" style="min-height:60px" placeholder="e.g. Follow up with L3 team, client expects update by 5 PM IST..."></textarea></div>
+    <div style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--primary-light);margin-bottom:14px">
+      ⏱ SLA: 🔴 High=${fmtMins(SLA_CONFIG.High)} · 🟡 Med=${fmtMins(SLA_CONFIG.Medium)} · 🟢 Low=${fmtMins(SLA_CONFIG.Low)}
+      &nbsp;&nbsp;${PA_WEBHOOK_URL?'📢 PA alert will fire on submit':'⚠️ Power Automate not configured'}
+    </div>
+    <button class="btn btn-primary" onclick="submitTask()">✅ Submit & Notify Team</button>
   </div>`;
 }
 
-function submitTask(){
-  const title=document.getElementById('f-title').value.trim();
-  if(!title){notify('Please fill the Title.','error');return;}
-  const newTask={
-    id:uid(),title,
-    description:document.getElementById('f-desc').value.trim(),
-    type:document.getElementById('f-type-log').value,
-    shift:document.getElementById('f-shift-log').value,
-    priority:document.getElementById('f-pri').value,
-    status:'Open',
-    submittedBy:curUser.name,
-    submittedByEmail:curUser.email,
-    assignedTo:'',date:new Date().toISOString(),dateClosed:''
-  };
-  db.ref('tasks/'+newTask.id).set(newTask);
-  notify('✅ Item logged — visible to all team members!');
-  showView('dashboard');
+async function submitTask(){
+  const title=document.getElementById('f-title').value.trim();if(!title){notify('Please fill the Title.','error');return;}
+  const assignTo=document.getElementById('f-assign')?.value||'';const hn=document.getElementById('f-handover-note')?.value?.trim()||'';
+  const nt={id:uid(),title,description:document.getElementById('f-desc').value.trim(),type:document.getElementById('f-type-log').value,shift:document.getElementById('f-shift-log').value,priority:document.getElementById('f-pri').value,status:assignTo?'In Progress':'Open',submittedBy:curUser.name,submittedByEmail:curUser.email,assignedTo:assignTo,handoverNote:hn,date:new Date().toISOString(),dateClosed:'',history:{}};
+  await db.ref('tasks/'+nt.id).set(nt);
+  addStatusHistory(nt.id,'—','Open',curUser.name);
+  if(assignTo)addStatusHistory(nt.id,'Open','In Progress — Assigned to '+assignTo,curUser.name+(hn?' | '+hn:''));
+  await triggerPA(nt,'new_task',{handoverNote:hn,assignedTo:assignTo,teamsMessage:`📋 NEW TASK — ${nt.shift} Shift\n${P_ICON[nt.priority]} ${nt.title}\nPriority: ${nt.priority} | By: ${curUser.name}${assignTo?' | → @'+assignTo.split(' ')[0]:''}\n${hn?'📝 '+hn+'\n':''}SLA: ${fmtMins(SLA_CONFIG[nt.priority])}\n👉 https://ayyanartest-ui.github.io/shift-handover`});
+  notify('✅ Item logged! Team notified.');showView('dashboard');
 }
 
-// ── VOICE ────────────────────────────────────────────────────────────
+// ── VOICE ─────────────────────────────────────────────────────────────
 function toggleVoice(){isListening?stopVoice():startVoice();}
-function startVoice(){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){notify('Voice not supported. Use Chrome.','error');return;}
-  recognition=new SR();recognition.lang='en-IN';recognition.continuous=false;recognition.interimResults=true;
-  isListening=true;
-  document.getElementById('micBtn').classList.add('listening');
-  document.getElementById('micBtn').textContent='⏹';
-  document.getElementById('aiStatus').textContent='🎙️ Listening...';
-  recognition.onresult=e=>{
-    let interim='',final='';
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      if(e.results[i].isFinal)final+=e.results[i][0].transcript;
-      else interim+=e.results[i][0].transcript;
-    }
-    document.getElementById('transcriptBox').textContent=final||interim;
-    if(final){stopVoice();processVoice(final);}
-  };
-  recognition.onerror=()=>{stopVoice();notify('Mic error. Try again.','error');};
-  recognition.onend=()=>{if(isListening)stopVoice();};
-  recognition.start();
-}
-function stopVoice(){
-  isListening=false;if(recognition)recognition.stop();
-  const btn=document.getElementById('micBtn');
-  if(btn){btn.classList.remove('listening');btn.textContent='🎤';}
-}
-function processVoice(t){
-  const low=t.toLowerCase();
-  let priority='Medium';
-  if(/urgent|critical|important|high|emergency|asap|failed|down|broken/i.test(low))priority='High';
-  else if(/minor|small|low|later|can wait|not urgent/i.test(low))priority='Low';
-  let shift='';
-  if(/morning/i.test(low))shift='Morning';
-  else if(/afternoon/i.test(low))shift='Afternoon';
-  else if(/night/i.test(low))shift='Night';
-  let type='Task';
-  if(/email/i.test(low))type='Email';
-  else if(/chat|teams/i.test(low))type='Chat';
-  else if(/ticket|incident/i.test(low))type='Ticket';
-  else if(/note|fyi/i.test(low))type='Note';
-  const words=t.split(' ');
-  let title=words.slice(0,8).join(' ');
-  title=title.charAt(0).toUpperCase()+title.slice(1);
-  const tf=document.getElementById('f-title');if(tf)tf.value=title;
-  const df=document.getElementById('f-desc');if(df)df.value=t.charAt(0).toUpperCase()+t.slice(1);
-  const pf=document.getElementById('f-pri');if(pf)pf.value=priority;
-  const sf=document.getElementById('f-shift-log');if(sf&&shift)sf.value=shift;
-  const typeF=document.getElementById('f-type-log');if(typeF)typeF.value=type;
-  document.getElementById('aiStatus').textContent='✅ Form filled from speech!';
-}
+function startVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){notify('Voice not supported. Use Chrome.','error');return;}recognition=new SR();recognition.lang='en-IN';recognition.continuous=false;recognition.interimResults=true;isListening=true;document.getElementById('micBtn').classList.add('listening');document.getElementById('micBtn').textContent='⏹';document.getElementById('aiStatus').textContent='🎙️ Listening...';recognition.onresult=e=>{let interim='',final='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)final+=e.results[i][0].transcript;else interim+=e.results[i][0].transcript;}document.getElementById('transcriptBox').textContent=final||interim;if(final){stopVoice();processVoice(final);}};recognition.onerror=()=>{stopVoice();notify('Mic error.','error');};recognition.onend=()=>{if(isListening)stopVoice();};recognition.start();}
+function stopVoice(){isListening=false;if(recognition)recognition.stop();const btn=document.getElementById('micBtn');if(btn){btn.classList.remove('listening');btn.textContent='🎤';}}
+function processVoice(t){const low=t.toLowerCase();let priority='Medium';if(/urgent|critical|high|emergency|asap|failed|down|broken/i.test(low))priority='High';else if(/minor|low|later|not urgent/i.test(low))priority='Low';let shift='';if(/morning/i.test(low))shift='Morning';else if(/afternoon/i.test(low))shift='Afternoon';else if(/night/i.test(low))shift='Night';let type='Task';if(/email/i.test(low))type='Email';else if(/chat|teams/i.test(low))type='Chat';else if(/ticket|incident/i.test(low))type='Ticket';else if(/note|fyi/i.test(low))type='Note';let title=t.split(' ').slice(0,8).join(' ');title=title.charAt(0).toUpperCase()+title.slice(1);const tf=document.getElementById('f-title');if(tf)tf.value=title;const df=document.getElementById('f-desc');if(df)df.value=t.charAt(0).toUpperCase()+t.slice(1);const pf=document.getElementById('f-pri');if(pf)pf.value=priority;const sf=document.getElementById('f-shift-log');if(sf&&shift)sf.value=shift;const typeF=document.getElementById('f-type-log');if(typeF)typeF.value=type;const au=getActiveUsers();const mentioned=au.find(u=>low.includes(u.name.split(' ')[0].toLowerCase()));if(mentioned){const af=document.getElementById('f-assign');if(af)af.value=mentioned.name;}document.getElementById('aiStatus').textContent='✅ Form auto-filled from speech!';}
 
-// ── TASK MODAL ───────────────────────────────────────────────────────
-function openTask(id){
-  const t=Object.values(tasks).find(x=>x.id===id);if(!t)return;
-  const canTake=t.status==='Open';
-  const canClose=t.status==='In Progress'&&(t.assignedTo===curUser.name||curUser.role==='Admin'||curUser.role==='Supervisor');
-  const cfg=SHIFTS_CONFIG[t.shift]||{};
-  document.getElementById('modalTitle').textContent=(T_ICON[t.type]||'📋')+' '+t.title;
+// ── ASSIGN MODAL ──────────────────────────────────────────────────────
+function openAssignModal(taskId){
+  const t=tasks[taskId]||Object.values(tasks).find(x=>x.id===taskId);if(!t)return;
+  const au=getActiveUsers().filter(u=>u.active);
+  document.getElementById('modalTitle').textContent='👤 Assign to Team Member';
   document.getElementById('modalBody').innerHTML=`
-    <div class="badges" style="margin-bottom:12px">
-      ${badge(P_ICON[t.priority]+' '+t.priority,P_COLOR[t.priority])}
-      ${badge(S_ICON[t.status]+' '+t.status,S_COLOR[t.status])}
-      ${badge(t.type,'#6264A7')}${badge(t.shift,'#0891b2')}
+    <div style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:12px;padding:12px 14px;margin-bottom:16px">
+      <div style="font-weight:700;font-size:13px;color:var(--text)">${T_ICON[t.type]} ${esc(t.title)}</div>
+      <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${badge(t.priority,P_COLOR[t.priority],P_ICON[t.priority])} ${badge(t.status,S_COLOR[t.status]||'#888',S_ICON[t.status])}</div>
     </div>
-    ${cfg.ist?`<div style="font-size:12px;color:#888;margin-bottom:8px">⏰ IST: ${cfg.ist} | EST: ${cfg.est}</div>`:''}
-    ${t.description?`<div style="font-size:13px;color:#555;background:#f7f7f7;padding:12px;border-radius:8px;margin-bottom:12px;line-height:1.6">${esc(t.description)}</div>`:''}
-    <div style="font-size:12px;color:#888;margin-bottom:6px">📤 By <b>${esc(t.submittedBy)}</b> • ${fmt(t.date)}</div>
-    ${t.assignedTo?`<div style="font-size:12px;color:#3b82f6;margin-bottom:10px">🔄 Assigned to: <b>${esc(t.assignedTo)}</b></div>`:''}
-    ${t.dateClosed?`<div style="font-size:12px;color:#6b7280;margin-bottom:10px">✅ Closed: ${fmt(t.dateClosed)}</div>`:''}
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-      ${canTake?`<button class="btn btn-orange" onclick="takeTask('${id}')">🙋 Take This Task</button>`:''}
-      ${canClose?`<button class="btn btn-success" onclick="closeTask('${id}')">✅ Mark as Closed</button>`:''}
-      ${curUser.role==='Admin'?`<button class="btn btn-danger btn-sm" onclick="deleteTask('${id}')">🗑 Delete</button>`:''}
+    ${t.assignedTo?`<div style="font-size:13px;color:var(--accent);margin-bottom:12px;font-weight:600">Currently: <b>${esc(t.assignedTo)}</b></div>`:''}
+    <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Select team member</div>
+    <div id="userPickerList">
+      ${au.map(u=>`<div class="user-row${t.assignedTo===u.name?' selected':''}" onclick="selectUserForAssign('${taskId}','${u.name}','${u.id}')">
+        <div class="avatar" style="width:38px;height:38px;font-size:14px;background:${avatarColor(u.name)}">${avatarInitials(u.name)}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:13px;color:var(--text)">${esc(u.name)}</div>
+          <div style="margin-top:4px;display:flex;gap:5px;flex-wrap:wrap">${badge(u.role,ROLE_COLOR[u.role]||'#888')} ${badge(u.shift,'#06b6d4')}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:13px;font-weight:700;color:${assignedCount(u.name)>3?'#ef4444':assignedCount(u.name)>1?'#f59e0b':'#10b981'}">${assignedCount(u.name)}</div>
+          <div style="font-size:10px;color:var(--text3)">active</div>
+          ${t.assignedTo===u.name?'<div style="font-size:10px;color:var(--primary-light);font-weight:700">✓ Current</div>':''}
+        </div>
+      </div>`).join('')}
+    </div>
+    <div class="form-group" style="margin-top:14px">
+      <label class="form-label">Handover Note (optional)</label>
+      <textarea id="handoverNote" placeholder="e.g. Follow up with L3 on ticket #123, update client by 5 PM IST..."></textarea>
     </div>`;
   document.getElementById('modal').style.display='flex';
 }
+async function selectUserForAssign(taskId,userName,userId){
+  const t=tasks[taskId]||Object.values(tasks).find(x=>x.id===taskId);if(!t)return;
+  const note=document.getElementById('handoverNote')?.value?.trim()||'';const old=t.assignedTo||'';
+  const upd={assignedTo:userName,status:t.status==='Open'?'In Progress':t.status};
+  await db.ref('tasks/'+taskId).update(upd);
+  addStatusHistory(taskId,`→${old||'nobody'}`,`→${userName}`,curUser.name+(note?' | Note: '+note:''));
+  await triggerPA({...t,...upd},'task_assigned',{assignedTo:userName,assignedBy:curUser.name,handoverNote:note,teamsMessage:`👤 @${userName.split(' ')[0]} — Task assigned by ${curUser.name}:\n📋 ${t.title}\nPriority: ${t.priority} | Status: ${upd.status}\n${note?'📝 '+note+'\n':''}👉 https://ayyanartest-ui.github.io/shift-handover`});
+  document.getElementById('modal').style.display='none';notify(`✅ Assigned to ${userName}! Teams notified.`);
+}
 
-function takeTask(id){
-  db.ref('tasks/'+id).update({status:'In Progress',assignedTo:curUser.name});
+// ── TASK MODAL ────────────────────────────────────────────────────────
+function openTask(id){
+  const t=tasks[id]||Object.values(tasks).find(x=>x.id===id);if(!t)return;
+  const sla=getSLAInfo(t);const isAdmin=curUser.role==='Admin';
+  const nextStatuses=STATUSES.filter(s=>s!==t.status);
+  const hist=t.history?Object.values(t.history).sort((a,b)=>new Date(a.at)-new Date(b.at)):[];
+  document.getElementById('modalTitle').textContent=`${T_ICON[t.type]||'📋'} ${t.title}`;
+  document.getElementById('modalBody').innerHTML=`
+    ${sla.breached&&!isTerminal(t.status)?`<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:10px 14px;font-size:13px;color:#fca5a5;font-weight:700;margin-bottom:14px">🔴 SLA BREACHED — Overdue by ${fmtMins(Math.abs(sla.remaining))}</div>`:sla.warning?`<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:10px 14px;font-size:13px;color:#fcd34d;font-weight:600;margin-bottom:14px">⚠️ SLA Warning — ${fmtMins(sla.remaining)} remaining</div>`:''}
+    <div class="badges" style="margin-bottom:12px">${badge(t.priority,P_COLOR[t.priority],P_ICON[t.priority])} ${badge(t.status,S_COLOR[t.status]||'#888',S_ICON[t.status])} ${badge(t.type,'#7c3aed')} ${badge(t.shift,'#06b6d4')}</div>
+    ${slaBarHTML(t)}
+    <div style="font-size:11px;color:var(--text3);margin-bottom:12px">SLA: ${fmtMins(sla.elapsedMins)} elapsed / ${fmtMins(sla.limitMins)} limit · Logged: ${fmt(t.date)}</div>
+    ${t.description?`<div style="font-size:13px;color:var(--text2);background:rgba(255,255,255,.03);border:1px solid var(--border2);padding:12px;border-radius:10px;margin-bottom:12px;line-height:1.6">${esc(t.description)}</div>`:''}
+    ${t.handoverNote?`<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:12px"><b style="color:#fcd34d">📝 Handover Note:</b> <span style="color:var(--text2)">${esc(t.handoverNote)}</span></div>`:''}
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">📤 By <b style="color:var(--text2)">${esc(t.submittedBy)}</b> · ${fmt(t.date)}</div>
+    <div style="margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      ${t.assignedTo?`<span class="assignee-pill"><div class="avatar" style="width:22px;height:22px;font-size:10px;background:${avatarColor(t.assignedTo)}">${avatarInitials(t.assignedTo)}</div>${esc(t.assignedTo)}</span>`:`<span class="assignee-pill unassigned">⚠️ No owner assigned</span>`}
+      ${!isTerminal(t.status)?`<button class="btn btn-sm btn-primary" onclick="document.getElementById('modal').style.display='none';openAssignModal('${id}')">👤 ${t.assignedTo?'Re-assign':'Assign'}</button>`:''}
+    </div>
+    ${!isTerminal(t.status)?`<div class="form-group">
+      <label class="form-label">Update Status</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="newStatus" style="margin:0;flex:1">${nextStatuses.map(s=>`<option value="${s}">${S_ICON[s]} ${s}</option>`).join('')}</select>
+        <button class="btn btn-primary btn-sm" onclick="updateStatus('${id}')">Update →</button>
+      </div>
+    </div>
+    ${!t.assignedTo?`<button class="btn btn-orange btn-sm" style="margin-right:8px" onclick="takeTask('${id}')">🙋 Take Task</button>`:''}`:''}
+    ${isAdmin?`<button class="btn btn-danger btn-sm" onclick="deleteTask('${id}')">🗑 Delete</button>`:''}
+    ${hist.length?`<div style="margin-top:18px"><div style="font-weight:700;font-size:13px;color:var(--text);margin-bottom:12px">📜 Status History</div>
+      <div class="timeline">${hist.map(h=>`<div class="tl-item"><div class="tl-dot"></div><div class="tl-text"><b style="color:var(--text)">${esc(h.from)}</b> → <b style="color:var(--primary-light)">${esc(h.to)}</b> by ${esc(h.by)}</div><div class="tl-time">${fmt(h.at)}</div></div>`).join('')}</div></div>`:''}`;
+  document.getElementById('modal').style.display='flex';
+}
+async function updateStatus(id){
+  const t=tasks[id]||Object.values(tasks).find(x=>x.id===id);if(!t)return;
+  const ns=document.getElementById('newStatus').value;const os=t.status;
+  const upd={status:ns};if(ns==='Closed')upd.dateClosed=new Date().toISOString();if(!t.assignedTo)upd.assignedTo=curUser.name;
+  await db.ref('tasks/'+id).update(upd);addStatusHistory(id,os,ns,curUser.name);await triggerPA({...t,...upd},'status_update');
+  notify(`✅ Status → "${ns}"`);document.getElementById('modal').style.display='none';
+}
+async function takeTask(id){
+  const t=tasks[id]||Object.values(tasks).find(x=>x.id===id);if(!t)return;
+  const upd={status:'In Progress',assignedTo:curUser.name};
+  await db.ref('tasks/'+id).update(upd);addStatusHistory(id,t.status,'In Progress',curUser.name);await triggerPA({...t,...upd},'task_taken');
   notify('✅ You took ownership!');openTask(id);
 }
-function closeTask(id){
-  db.ref('tasks/'+id).update({status:'Closed',dateClosed:new Date().toISOString()});
-  notify('✅ Task closed!');
-  document.getElementById('modal').style.display='none';
-}
-function deleteTask(id){
-  if(!confirm('Delete this item?'))return;
-  db.ref('tasks/'+id).remove();
-  document.getElementById('modal').style.display='none';
-  notify('Item deleted.');
-}
+function deleteTask(id){if(curUser.role!=='Admin'){notify('Admin only.','error');return;}if(!confirm('Delete permanently?'))return;db.ref('tasks/'+id).remove();document.getElementById('modal').style.display='none';notify('Deleted.');}
 function closeModal(e){if(e.target.id==='modal')document.getElementById('modal').style.display='none';}
 
-// ── SUMMARY ──────────────────────────────────────────────────────────
+// ── TEAM STATS ────────────────────────────────────────────────────────
+function renderTeam(){
+  const all=taskArr();const people={};
+  all.forEach(t=>{[t.submittedBy,t.assignedTo].filter(Boolean).forEach(n=>{if(!people[n])people[n]={name:n,logged:0,taken:0,closed:0,slaBreached:0,totalMins:0,closedCount:0,active:0};});if(t.submittedBy)people[t.submittedBy].logged++;if(t.assignedTo){people[t.assignedTo].taken++;if(!isTerminal(t.status))people[t.assignedTo].active++;if(isTerminal(t.status)){people[t.assignedTo].closed++;if(t.dateClosed&&t.date){people[t.assignedTo].totalMins+=Math.floor((new Date(t.dateClosed)-new Date(t.date))/60000);people[t.assignedTo].closedCount++;}}if(getSLAInfo(t).breached)people[t.assignedTo].slaBreached++;}});
+  const sorted=Object.values(people).sort((a,b)=>b.taken-a.taken);
+  document.getElementById('view-team').innerHTML=`
+  <div class="stat-grid">
+    ${[['Members',sorted.length,'#7c3aed'],['Active',all.filter(t=>!isTerminal(t.status)).length,'#f59e0b'],['Resolved',all.filter(t=>isTerminal(t.status)).length,'#10b981'],['SLA Breaches',all.filter(t=>getSLAInfo(t).breached).length,'#ef4444']].map(([l,v,c])=>`<div class="stat-card" style="--stat-color:${c}"><div class="stat-num">${v}</div><div class="stat-label">${l}</div></div>`).join('')}
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><div class="card-title-icon">👥</div>Individual Performance</div>
+      <button class="btn btn-sm btn-orange" onclick="openAutoReminderPanel()">⏰ Auto-Remind</button>
+    </div>
+    ${sorted.length===0?`<div class="empty"><div class="empty-icon">👥</div>No data yet.</div>`:sorted.map(p=>{
+      const eff=p.taken>0?Math.round(p.closed/p.taken*100):0;const avgRes=p.closedCount>0?fmtMins(Math.round(p.totalMins/p.closedCount)):'—';const slaRate=p.taken>0?Math.round((p.taken-p.slaBreached)/p.taken*100):100;const col=avatarColor(p.name);
+      return`<div class="person-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="avatar" style="width:44px;height:44px;font-size:16px;background:${col}">${avatarInitials(p.name)}</div>
+            <div><div style="font-weight:800;font-size:15px;color:var(--text)">${esc(p.name)}</div><div style="font-size:12px;color:var(--text3);margin-top:2px">${p.active} active · ${p.logged} logged</div></div>
+          </div>
+          <div style="text-align:right"><div style="font-size:24px;font-weight:900;color:${eff>=75?'#10b981':eff>=40?'#f59e0b':'#ef4444'}">${eff}%</div><div style="font-size:11px;color:var(--text3)">efficiency</div></div>
+        </div>
+        <div class="eff-bar-wrap"><div class="eff-bar" style="width:${eff}%"></div></div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:10px">
+          <span class="mini-stat">🙋 ${p.taken} taken</span>
+          <span class="mini-stat">✅ ${p.closed} closed</span>
+          <span class="mini-stat" style="color:${slaRate>=80?'#10b981':'#ef4444'}">⏱ ${slaRate}% SLA</span>
+          <span class="mini-stat">⚡ ${avgRes} avg</span>
+          ${p.slaBreached?`<span class="mini-stat" style="color:#ef4444">🔴 ${p.slaBreached} breached</span>`:''}
+        </div>
+      </div>`;}).join('')}
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><div class="card-title-icon">📊</div>Status Breakdown</div></div>
+    <div class="badges" style="gap:8px;flex-wrap:wrap">${STATUSES.map(s=>{const c=taskArr().filter(t=>t.status===s).length;return badge(`${S_ICON[s]} ${s}: ${c}`,S_COLOR[s]||'#888');}).join('')}</div>
+  </div>`;
+}
+
+// ── SUMMARY ───────────────────────────────────────────────────────────
 function renderSummary(){
   const all=taskArr();
-  let html='<div class="card"><div class="section-title">📈 Shift-wise Summary</div>';
+  let html='<div class="card"><div class="card-header"><div class="card-title"><div class="card-title-icon">📈</div>Shift-wise Summary</div></div>';
   ['Morning','Afternoon','Night'].forEach(sh=>{
-    const cfg=SHIFTS_CONFIG[sh]||{};
-    const st=all.filter(t=>t.shift===sh||t.shift==='All');
-    const closed=st.filter(t=>t.status==='Closed').length;
-    const pct=st.length?Math.round(closed/st.length*100):0;
-    html+=`<div style="margin-bottom:18px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:2px"><b>${sh} Shift</b>
-        <span style="font-size:11px;color:#888">IST: ${cfg.ist||''} | EST: ${cfg.est||''}</span></div>
-      <div style="font-size:11px;color:#aaa;margin-bottom:4px">Notify: ${cfg.notifyIST||''} IST / ${cfg.notifyEST||''} EST</div>
+    const cfg=SHIFTS_CONFIG[sh]||{};const st=all.filter(t=>t.shift===sh||t.shift==='All');const closed=st.filter(t=>isTerminal(t.status)).length;const pct=st.length?Math.round(closed/st.length*100):0;const breached=st.filter(t=>getSLAInfo(t).breached).length;
+    html+=`<div style="margin-bottom:20px;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border2)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px">
+        <div style="font-weight:700;font-size:14px">${{Morning:'🌅',Afternoon:'🌆',Night:'🌙'}[sh]} ${sh} Shift</div>
+        <div style="font-size:11px;color:var(--text3)">IST: ${cfg.ist||''} · EST: ${cfg.est||''}</div>
+      </div>
       <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%"></div></div>
-      <div class="badges">${STATUSES.map(s=>{const c=st.filter(t=>t.status===s).length;return badge(S_ICON[s]+' '+s+': '+c,S_COLOR[s]);}).join('')}</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px">${pct}% resolved (${closed}/${st.length})</div>
+      <div class="badges" style="flex-wrap:wrap;gap:6px">${STATUSES.map(s=>{const c=st.filter(t=>t.status===s).length;return c?badge(`${S_ICON[s]} ${s}: ${c}`,S_COLOR[s]||'#888'):''}).join('')}${breached?badge('🔴 SLA: '+breached,'#ef4444'):''}</div>
     </div>`;
   });
   html+='</div>';
-  const highOpen=taskArr().filter(t=>t.priority==='High'&&t.status!=='Closed');
-  html+=`<div class="card"><div class="section-title">🔴 High Priority Active (${highOpen.length})</div>
-    ${highOpen.length===0?'<div class="empty">✅ No high priority active items!</div>':highOpen.map(t=>taskCardHTML(t)).join('')}
-  </div>`;
+  const stale=getStaleItems();
+  if(stale.length)html+=`<div class="card"><div class="card-header"><div class="card-title" style="color:#f59e0b"><div class="card-title-icon" style="background:rgba(245,158,11,.15)">⏰</div>Overdue (${stale.length})</div><button class="btn btn-sm btn-orange" onclick="openReminderAlertModal(null)">📢 Send Reminder</button></div>${stale.map(t=>taskCardHTML(t)).join('')}</div>`;
   document.getElementById('view-summary').innerHTML=html;
 }
 
-// ── ADMIN ────────────────────────────────────────────────────────────
-function renderAdmin(){
-  if(curUser.role!=='Admin'){document.getElementById('view-admin').innerHTML='<div class="card empty">⛔ Admin access only.</div>';return;}
-  const curTab=window._adminTab||'users';
-  document.getElementById('view-admin').innerHTML=`
-  <div class="card" style="padding:0;overflow:hidden">
-    <div style="display:flex;border-bottom:2px solid #f0f0f0">
-      ${[['users','👥 Users'],['shifts','⏰ Shifts'],['stats','📊 Stats']].map(([k,l])=>`
-      <button onclick="window._adminTab='${k}';renderAdmin()" style="flex:1;padding:12px;border:none;background:${curTab===k?'#6264A7':'white'};color:${curTab===k?'white':'#555'};font-weight:700;font-size:13px;cursor:pointer">${l}</button>`).join('')}
+// ── REMINDER HELPERS ──────────────────────────────────────────────────
+function getAgeMinutes(d){return Math.floor((Date.now()-new Date(d).getTime())/60000);}
+function formatAge(m){if(m<60)return m+'m ago';const h=Math.floor(m/60),r=m%60;return r?`${h}h ${r}m ago`:`${h}h ago`;}
+function getStaleItems(){return taskArr().filter(t=>!isTerminal(t.status)).map(t=>{const age=getAgeMinutes(t.date),threshold=reminderSettings.thresholds[t.priority]||60;return{...t,age,threshold,isStale:age>=threshold};}).filter(t=>t.isStale).sort((a,b)=>b.age-a.age);}
+function checkAutoPopup(){if(!reminderSettings.enabled||!reminderSettings.autoPopup)return;const stale=getStaleItems();if(stale.length>0)setTimeout(()=>openReminderAlertModal(stale),1500);}
+function reminderBannerHTML(){
+  if(!reminderSettings.enabled||!reminderSettings.notifyOnDashboard)return'';
+  const stale=getStaleItems();
+  if(stale.length===0)return`<div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:12px;padding:10px 16px;margin-bottom:16px;font-size:13px;color:#6ee7b7;font-weight:600;display:flex;align-items:center;gap:8px">✅ All pending items within threshold — team is on track!</div>`;
+  const hc=stale.filter(t=>t.priority==='High').length;
+  return`<div class="reminder-banner" onclick="toggleReminderBanner()">
+    <div class="reminder-banner-header">
+      <div style="font-weight:700;font-size:14px;color:#fcd34d;display:flex;align-items:center"><span class="reminder-pulse"></span>⏰ ${stale.length} Pending Items Awaiting Action ${hc?`<span style="background:#ef4444;color:white;font-size:10px;padding:1px 8px;border-radius:10px;margin-left:6px">${hc} High</span>`:''}</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-xs btn-orange" onclick="event.stopPropagation();openReminderAlertModal(null)">📢 Remind</button>
+        <span style="color:#fcd34d" id="reminderChevron">${reminderBannerOpen?'▲':'▼'}</span>
+      </div>
     </div>
-    <div style="padding:20px" id="adminContent"></div>
+    <div class="reminder-items ${reminderBannerOpen?'open':''}" id="reminderItems">
+      ${stale.map(t=>{const lvl=t.priority==='High'?'critical':t.priority==='Medium'?'warning':'info';
+        return`<div class="reminder-item ${lvl}" onclick="event.stopPropagation();openTask('${t.id}')">
+          <div style="font-size:16px">${T_ICON[t.type]||'📋'}</div>
+          <div style="flex:1"><div style="font-weight:700;color:var(--text)">${esc(t.title)}<span class="stale-badge">+${formatAge(t.age)}</span></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">${badge(t.priority,P_COLOR[t.priority],P_ICON[t.priority])} By ${esc(t.submittedBy)} ${t.assignedTo?'→ 🔄 '+esc(t.assignedTo):'⚠️ Unassigned'}</div></div>
+        </div>`;}).join('')}
+    </div>
   </div>`;
-  if(curTab==='users')renderAdminUsers();
-  if(curTab==='shifts')renderAdminShifts();
-  if(curTab==='stats')renderAdminStats();
 }
-
-async function renderAdminUsers(){
-  const snap=await db.ref('users').get();
-  users=snap.val()||{};
-  const el=document.getElementById('adminContent');
-  el.innerHTML=`
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-    <div style="font-weight:700;font-size:15px">👥 Team Members (${Object.keys(users).length})</div>
-    <button class="btn btn-primary btn-sm" onclick="openAddUser()">+ Add User</button>
-  </div>
-  ${Object.values(users).map((u,i)=>`
-  <div style="background:#f9f9ff;border-radius:10px;padding:12px 14px;margin-bottom:10px;border:1px solid #e8e8f7">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-      <div>
-        <div style="font-weight:700">${esc(u.name)}</div>
-        <div style="font-size:12px;color:#888">${esc(u.email)}</div>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-        ${badge(u.role,ROLE_COLOR[u.role]||'#888')}
-        ${badge(u.shift,'#0891b2')}
-        ${badge(u.active?'Active':'Inactive',u.active?'#22c55e':'#ef4444')}
-        <button class="btn btn-primary btn-sm" onclick="openEditUser('${u.id}')">✏️ Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="toggleActive('${u.id}',${u.active})">${u.active?'Deactivate':'Activate'}</button>
-      </div>
-    </div>
-  </div>`).join('')}`;
-}
-
-function openAddUser(){
-  document.getElementById('modalTitle').textContent='➕ Add New User';
-  document.getElementById('modalBody').innerHTML=userForm({name:'',email:'',password:'',role:'Agent',shift:'Morning',active:true},'saveNewUser()');
-  document.getElementById('modal').style.display='flex';
-}
-function openEditUser(uid){
-  const u=users[uid];if(!u)return;
-  document.getElementById('modalTitle').textContent='✏️ Edit User';
-  document.getElementById('modalBody').innerHTML=userForm(u,`saveEditUser('${uid}')`);
-  document.getElementById('modal').style.display='flex';
-}
-function userForm(u,onSave){
-  return `
-  <label class="lbl">Full Name *</label><input id="uf-name" value="${esc(u.name)}" placeholder="e.g. Ravi Kumar"/>
-  <label class="lbl">Email * (@reachmobile.com)</label><input id="uf-email" value="${esc(u.email)}" placeholder="name@reachmobile.com"/>
-  <label class="lbl">Password *</label><input id="uf-pass" type="password" value="${esc(u.password)}" placeholder="Min 6 characters"/>
-  <div class="row2">
-    <div><label class="lbl">Role</label><select id="uf-role">${['Admin','Supervisor','Agent'].map(r=>`<option${r===u.role?' selected':''}>${r}</option>`).join('')}</select></div>
-    <div><label class="lbl">Shift</label><select id="uf-shift">${SHIFTS.map(s=>`<option${s===u.shift?' selected':''}>${s}</option>`).join('')}</select></div>
-  </div>
-  <label class="lbl">Status</label>
-  <select id="uf-active"><option value="true"${u.active?' selected':''}>Active</option><option value="false"${!u.active?' selected':''}>Inactive</option></select>
-  <div style="margin-top:14px"><button class="btn btn-primary" onclick="${onSave}">💾 Save User</button></div>`;
-}
-function getUserFormData(){
-  return {
-    name:document.getElementById('uf-name').value.trim(),
-    email:document.getElementById('uf-email').value.trim().toLowerCase(),
-    password:document.getElementById('uf-pass').value,
-    role:document.getElementById('uf-role').value,
-    shift:document.getElementById('uf-shift').value,
-    active:document.getElementById('uf-active').value==='true'
-  };
-}
-function validateUser(d,skipEmail){
-  if(!d.name||!d.email||!d.password){notify('Fill all required fields.','error');return false;}
-  if(!d.email.endsWith('@reachmobile.com')){notify('Email must be @reachmobile.com','error');return false;}
-  if(d.password.length<6){notify('Password min 6 characters.','error');return false;}
-  return true;
-}
-function saveNewUser(){
-  const d=getUserFormData();if(!validateUser(d))return;
-  const newId='u'+Date.now();
-  db.ref('users/'+newId).set({id:newId,...d});
-  document.getElementById('modal').style.display='none';
-  notify('✅ User added! They can now login from any device.');
-  window._adminTab='users';renderAdmin();
-}
-function saveEditUser(uid){
-  const d=getUserFormData();if(!validateUser(d))return;
-  db.ref('users/'+uid).update(d);
-  document.getElementById('modal').style.display='none';
-  notify('✅ User updated!');
-  window._adminTab='users';renderAdmin();
-}
-function toggleActive(uid,current){
-  db.ref('users/'+uid).update({active:!current});
-  notify(`User ${!current?'activated':'deactivated'}.`);
-  window._adminTab='users';renderAdmin();
-}
-
-function renderAdminShifts(){
-  const el=document.getElementById('adminContent');
-  el.innerHTML=`
-  <div style="font-weight:700;font-size:15px;margin-bottom:14px">⏰ Shift Timing Configuration</div>
-  ${['Morning','Afternoon','Night'].map(sh=>{
-    const c=SHIFTS_CONFIG[sh]||{};
-    return `<div style="background:#f9f9ff;border-radius:10px;padding:16px;margin-bottom:12px;border:1px solid #e8e8f7">
-      <div style="font-weight:700;margin-bottom:10px">${{Morning:'🌅',Afternoon:'🌆',Night:'🌙'}[sh]} ${sh} Shift</div>
-      <div class="row2">
-        <div><label class="lbl">Start IST</label><input id="sh-${sh}-is" value="${(c.ist||'').split('–')[0]?.trim()||''}"/></div>
-        <div><label class="lbl">End IST</label><input id="sh-${sh}-ie" value="${(c.ist||'').split('–')[1]?.trim()||''}"/></div>
-      </div>
-      <div class="row2">
-        <div><label class="lbl">Start EST</label><input id="sh-${sh}-es" value="${(c.est||'').split('–')[0]?.trim()||''}"/></div>
-        <div><label class="lbl">End EST</label><input id="sh-${sh}-ee" value="${(c.est||'').split('–')[1]?.trim()||''}"/></div>
-      </div>
-      <div class="row2">
-        <div><label class="lbl">Notify IST</label><input id="sh-${sh}-ni" value="${c.notifyIST||''}"/></div>
-        <div><label class="lbl">Notify EST</label><input id="sh-${sh}-ne" value="${c.notifyEST||''}"/></div>
-      </div>
+function toggleReminderBanner(){reminderBannerOpen=!reminderBannerOpen;const i=document.getElementById('reminderItems'),c=document.getElementById('reminderChevron');if(i)i.classList.toggle('open',reminderBannerOpen);if(c)c.textContent=reminderBannerOpen?'▲':'▼';}
+function openReminderAlertModal(staleIn){
+  const stale=staleIn||getStaleItems();if(stale.length===0){notify('No overdue items! ✅','info');return;}
+  const msg=buildReminderMessage(stale,false);
+  document.getElementById('modalTitle').textContent='⏰ Pending Items Reminder';
+  document.getElementById('modalBody').innerHTML=`
+    <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:10px 14px;font-size:13px;color:#fcd34d;font-weight:600;margin-bottom:14px">⚠️ ${stale.length} item${stale.length>1?'s':''} overdue and need action!</div>
+    <div class="code-box">${esc(msg)}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+      <button class="btn btn-primary" onclick="navigator.clipboard.writeText(window._rm||'').then(()=>notify('✅ Copied!'))">📋 Copy</button>
+      <button class="btn btn-orange" onclick="fireAutoReminder(false).then(()=>notify('📢 Sent via PA!','info'))">📢 Send via PA</button>
     </div>`;
-  }).join('')}
-  <button class="btn btn-primary" onclick="saveShiftTimings()">💾 Save Shift Timings</button>`;
+  window._rm=msg;document.getElementById('modal').style.display='flex';
 }
-function saveShiftTimings(){
-  const updated={};
-  ['Morning','Afternoon','Night'].forEach(sh=>{
-    updated[sh]={
-      ist:`${document.getElementById(`sh-${sh}-is`).value.trim()} – ${document.getElementById(`sh-${sh}-ie`).value.trim()}`,
-      est:`${document.getElementById(`sh-${sh}-es`).value.trim()} – ${document.getElementById(`sh-${sh}-ee`).value.trim()}`,
-      notifyIST:document.getElementById(`sh-${sh}-ni`).value.trim(),
-      notifyEST:document.getElementById(`sh-${sh}-ne`).value.trim()
-    };
-  });
-  db.ref('config/shifts').set(updated);
-  Object.assign(SHIFTS_CONFIG,updated);
-  notify('✅ Shift timings saved for all users!');
-  updateHeader();
+function openReminderModal(){
+  document.getElementById('modalTitle').textContent='🔔 Reminder Settings';
+  document.getElementById('modalBody').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border2)">
+      <div><div style="font-weight:700;font-size:13px">Enable Reminders</div><div style="font-size:12px;color:var(--text3)">Dashboard overdue alerts</div></div>
+      <label class="toggle-sw"><input type="checkbox" id="rc-enabled" ${reminderSettings.enabled?'checked':''}><span class="toggle-sl"></span></label>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border2)">
+      <div><div style="font-weight:700;font-size:13px">Auto Popup on Login</div><div style="font-size:12px;color:var(--text3)">Alert when overdue items exist</div></div>
+      <label class="toggle-sw"><input type="checkbox" id="rc-popup" ${reminderSettings.autoPopup?'checked':''}><span class="toggle-sl"></span></label>
+    </div>
+    <div style="margin:14px 0 10px;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--text3)">Stale Thresholds (minutes)</div>
+    <div class="row3">
+      <div class="form-group"><label class="form-label">🔴 High</label><input type="number" id="rc-th-high" value="${reminderSettings.thresholds.High}" min="5"/></div>
+      <div class="form-group"><label class="form-label">🟡 Medium</label><input type="number" id="rc-th-med" value="${reminderSettings.thresholds.Medium}" min="5"/></div>
+      <div class="form-group"><label class="form-label">🟢 Low</label><input type="number" id="rc-th-low" value="${reminderSettings.thresholds.Low}" min="5"/></div>
+    </div>
+    <button class="btn btn-primary" onclick="saveReminderSettings()">💾 Save Settings</button>`;
+  document.getElementById('modal').style.display='flex';
 }
+function saveReminderSettings(){reminderSettings.enabled=document.getElementById('rc-enabled').checked;reminderSettings.autoPopup=document.getElementById('rc-popup').checked;reminderSettings.thresholds.High=parseInt(document.getElementById('rc-th-high').value)||30;reminderSettings.thresholds.Medium=parseInt(document.getElementById('rc-th-med').value)||60;reminderSettings.thresholds.Low=parseInt(document.getElementById('rc-th-low').value)||120;db.ref('config/reminders').set(reminderSettings);document.getElementById('modal').style.display='none';notify('✅ Settings saved!');if(curView==='dashboard')renderDashboard();}
 
-function renderAdminStats(){
-  const all=taskArr();
-  document.getElementById('adminContent').innerHTML=`
-  <div style="font-weight:700;font-size:15px;margin-bottom:12px">📊 Statistics</div>
-  <div class="stat-grid" style="margin-bottom:14px">
-    ${[['Total',all.length,'#6264A7'],['Open',all.filter(t=>t.status==='Open').length,'#f59e0b'],['In Progress',all.filter(t=>t.status==='In Progress').length,'#3b82f6'],['Closed',all.filter(t=>t.status==='Closed').length,'#6b7280']].map(([l,v,c])=>`
-    <div class="stat-card" style="border-top:4px solid ${c}"><div class="stat-num" style="color:${c}">${v}</div><div class="stat-label">${l}</div></div>`).join('')}
-  </div>
-  <div style="font-weight:700;margin-bottom:8px">By Type</div>
-  <div class="badges" style="margin-bottom:16px">${ITEM_TYPES.map(tp=>badge(T_ICON[tp]+' '+tp+': '+all.filter(t=>t.type===tp).length,'#6264A7')).join('')}</div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <button class="btn btn-danger btn-sm" onclick="clearClosed()">🗑 Clear Closed Tasks</button>
-    <button class="btn btn-primary btn-sm" onclick="downloadCSV()">⬇ Export Excel</button>
-  </div>`;
+// ── AUTO-REMINDER PANEL ───────────────────────────────────────────────
+function openAutoReminderPanel(){
+  const active=taskArr().filter(t=>!isTerminal(t.status));const major=active.filter(t=>t.priority==='High'||getSLAInfo(t).breached);
+  document.getElementById('modalTitle').textContent='⏰ Auto-Reminder Engine';
+  document.getElementById('modalBody').innerHTML=`
+    <div style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:10px;padding:14px;font-size:13px;color:var(--primary-light);margin-bottom:16px;line-height:1.8">
+      🔄 Every <b>${autoReminderConfig.normalIntervalMins}m</b> — all pending items listed by assignee<br>
+      🚨 Every <b>${autoReminderConfig.majorIntervalMins}m</b> — High/SLA breached items get urgent alert
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:12px;padding:14px;margin-bottom:14px;border:1px solid var(--border2)">
+      <div><div style="font-weight:700">Auto-Remind Status</div><div style="font-size:12px;color:var(--text3);margin-top:2px">${active.length} active · ${major.length} high/breach</div></div>
+      <span class="ar-status ${autoReminderConfig.enabled?'running':'paused'}">${autoReminderConfig.enabled?'🟢 Running':'⏸ Paused'}</span>
+    </div>
+    <div class="row2">
+      <div class="form-group"><label class="form-label">Normal Interval (mins)</label><input type="number" id="ar-normal" value="${autoReminderConfig.normalIntervalMins}" min="5" max="120"/></div>
+      <div class="form-group"><label class="form-label">Major Alert (mins)</label><input type="number" id="ar-major" value="${autoReminderConfig.majorIntervalMins}" min="5" max="60"/></div>
+    </div>
+    ${autoReminderConfig.lastFired?`<div style="font-size:12px;color:var(--text3);margin-bottom:6px">Last reminder: ${fmt(autoReminderConfig.lastFired)}</div>`:''}
+    ${!PA_WEBHOOK_URL?`<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#fca5a5;margin-bottom:12px">⚠️ Power Automate not configured — reminders won't reach Teams.</div>`:''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn ${autoReminderConfig.enabled?'btn-danger':'btn-success'}" onclick="toggleAutoReminder()">${autoReminderConfig.enabled?'⏸ Pause':'▶ Start'}</button>
+      <button class="btn btn-primary" onclick="saveARConfig()">💾 Save Intervals</button>
+      <button class="btn btn-orange btn-sm" onclick="fireAutoReminder(false);notify('📢 Manual reminder sent!','info')">📢 Fire Now</button>
+      ${major.length?`<button class="btn btn-danger btn-sm" onclick="fireAutoReminder(true)">🚨 Major Alert</button>`:''}
+    </div>`;
+  document.getElementById('modal').style.display='flex';
 }
-function clearClosed(){
-  if(!confirm('Remove all closed tasks from database?'))return;
-  const toDelete=Object.values(tasks).filter(t=>t.status==='Closed');
-  toDelete.forEach(t=>db.ref('tasks/'+t.id).remove());
-  notify(`${toDelete.length} closed tasks removed.`);
-}
+async function toggleAutoReminder(){autoReminderConfig.enabled=!autoReminderConfig.enabled;await db.ref('config/autoReminder').update({enabled:autoReminderConfig.enabled});if(autoReminderConfig.enabled)startAutoReminderEngine();else stopAutoReminderEngine();notify(autoReminderConfig.enabled?'✅ Auto-Reminder started!':'⏸ Paused.',autoReminderConfig.enabled?'success':'warn');document.getElementById('modal').style.display='none';}
+async function saveARConfig(){autoReminderConfig.normalIntervalMins=parseInt(document.getElementById('ar-normal').value)||30;autoReminderConfig.majorIntervalMins=parseInt(document.getElementById('ar-major').value)||15;await db.ref('config/autoReminder').update({normalIntervalMins:autoReminderConfig.normalIntervalMins,majorIntervalMins:autoReminderConfig.majorIntervalMins});if(autoReminderConfig.enabled)startAutoReminderEngine();notify('✅ Intervals saved!');openAutoReminderPanel();}
 
 // ── TEAMS NOTIFICATION ────────────────────────────────────────────────
 function sendTeamsNotification(){
-  const all=taskArr();
-  const open=all.filter(t=>t.status==='Open');
-  const ip=all.filter(t=>t.status==='In Progress');
-  const sh=getCurrentShift();
-  const cfg=SHIFTS_CONFIG[sh]||{};
-  const msg=`📋 SHIFT HANDOVER SUMMARY — ${sh} Shift | ${new Date().toLocaleDateString('en-IN')}
-IST: ${cfg.ist} | EST: ${cfg.est}
-
-🔴 HIGH PRIORITY OPEN (${open.filter(t=>t.priority==='High').length})
-${open.filter(t=>t.priority==='High').map(t=>`• ${T_ICON[t.type]} ${t.title} | By: ${t.submittedBy}`).join('\n')||'  None'}
-
-🟡 MEDIUM PRIORITY OPEN (${open.filter(t=>t.priority==='Medium').length})
-${open.filter(t=>t.priority==='Medium').map(t=>`• ${T_ICON[t.type]} ${t.title} | By: ${t.submittedBy}`).join('\n')||'  None'}
-
-🟢 LOW PRIORITY OPEN (${open.filter(t=>t.priority==='Low').length})
-${open.filter(t=>t.priority==='Low').map(t=>`• ${T_ICON[t.type]} ${t.title} | By: ${t.submittedBy}`).join('\n')||'  None'}
-
-🔄 IN PROGRESS (${ip.length})
-${ip.map(t=>`• ${T_ICON[t.type]} ${t.title} | Assigned: ${t.assignedTo||'Unassigned'}`).join('\n')||'  None'}
-
-Total Open: ${open.length} | In Progress: ${ip.length}
-👉 App: https://ayyanartest-ui.github.io/shift-handover`;
+  const all=taskArr();const active=all.filter(t=>!isTerminal(t.status));const sh=getCurrentShift();const cfg=SHIFTS_CONFIG[sh]||{};
+  let msg=`📋 SHIFT HANDOVER — ${sh} Shift | ${new Date().toLocaleDateString('en-IN')}\nIST: ${cfg.ist||''} | EST: ${cfg.est||''}\n\n`;
+  STATUSES.filter(s=>s!=='Closed').forEach(s=>{const items=active.filter(t=>t.status===s);if(items.length){msg+=`${S_ICON[s]} ${s.toUpperCase()} (${items.length})\n`;items.forEach(t=>{const sla=getSLAInfo(t);msg+=`  • ${P_ICON[t.priority]} ${T_ICON[t.type]} ${t.title} | ${sla.breached?'🔴 BREACHED':'⏱ '+fmtMins(sla.remaining)+' left'} | ${t.assignedTo?'→ '+t.assignedTo:'⚠️ Unassigned'}\n`;});msg+='\n';}});
+  msg+=`📊 Active: ${active.length} | Breached: ${all.filter(t=>getSLAInfo(t).breached).length} | Closed Today: ${closedToday()}\n👉 https://ayyanartest-ui.github.io/shift-handover`;
   document.getElementById('modalTitle').textContent='📢 Teams Notification';
-  document.getElementById('modalBody').innerHTML=`
-    <div style="font-size:12px;color:#888;margin-bottom:8px">Copy and paste in your Teams channel:</div>
-    <div style="background:#1e1e2e;color:#cdd6f4;border-radius:8px;padding:14px;font-family:monospace;font-size:12px;white-space:pre-wrap;line-height:1.7;max-height:320px;overflow-y:auto">${esc(msg)}</div>
-    <button class="btn btn-primary" style="margin-top:12px" onclick="navigator.clipboard.writeText(window._nm||'').then(()=>notify('✅ Copied!'))">📋 Copy Message</button>`;
-  window._nm=msg;
-  document.getElementById('modal').style.display='flex';
+  document.getElementById('modalBody').innerHTML=`<div style="font-size:12px;color:var(--text3);margin-bottom:10px">Copy and post in your Teams channel:</div><div class="code-box">${esc(msg)}</div><button class="btn btn-primary" style="margin-top:12px" onclick="navigator.clipboard.writeText(window._nm||'').then(()=>notify('✅ Copied!'))">📋 Copy</button>`;
+  window._nm=msg;document.getElementById('modal').style.display='flex';
 }
 
-// ── EXPORT CSV ───────────────────────────────────────────────────────
-function downloadCSV(){
-  const headers=['Title','Type','Description','Shift','Priority','Status','Submitted By','Assigned To','Date Submitted','Date Closed'];
-  const rows=taskArr().map(t=>[
-    `"${(t.title||'').replace(/"/g,'""')}"`,t.type,
-    `"${(t.description||'').replace(/"/g,'""')}"`,
-    t.shift,t.priority,t.status,
-    `"${(t.submittedBy||'').replace(/"/g,'""')}"`,
-    `"${(t.assignedTo||'').replace(/"/g,'""')}"`,
-    fmt(t.date),fmt(t.dateClosed)
-  ]);
-  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download=`ShiftHandover_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();notify('✅ CSV downloaded!');
+// ── ADMIN ──────────────────────────────────────────────────────────────
+function renderAdmin(){
+  if(curUser.role!=='Admin'){document.getElementById('view-admin').innerHTML='<div class="card"><div class="empty"><div class="empty-icon">⛔</div>Admin access only.</div></div>';return;}
+  const curTab=window._adminTab||'users';
+  document.getElementById('view-admin').innerHTML=`
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="admin-tabs">
+      ${[['users','👥 Users'],['shifts','⏰ Shifts'],['sla','📊 SLA'],['pa','🔗 Power Automate'],['stats','📈 Stats']].map(([k,l])=>`<button class="admin-tab-btn${curTab===k?' active':''}" onclick="window._adminTab='${k}';renderAdmin()">${l}</button>`).join('')}
+    </div>
+    <div style="padding:20px" id="adminContent"></div>
+  </div>`;
+  if(curTab==='users')renderAdminUsers();if(curTab==='shifts')renderAdminShifts();if(curTab==='sla')renderAdminSLA();if(curTab==='pa')renderAdminPA();if(curTab==='stats')renderAdminStats();
 }
+async function renderAdminUsers(){
+  const snap=await db.ref('users').get();users=snap.val()||{};
+  document.getElementById('adminContent').innerHTML=`
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div style="font-weight:700;font-size:15px">Team Members (${Object.keys(users).length})</div>
+    <button class="btn btn-primary btn-sm" onclick="openAddUser()">+ Add User</button>
+  </div>
+  ${Object.values(users).map(u=>`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;margin-bottom:10px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="avatar" style="width:40px;height:40px;font-size:15px;background:${avatarColor(u.name)}">${avatarInitials(u.name)}</div>
+      <div><div style="font-weight:700">${esc(u.name)}</div><div style="font-size:12px;color:var(--text3)">${esc(u.email)}</div></div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      ${badge(u.role,ROLE_COLOR[u.role]||'#888')} ${badge(u.shift,'#06b6d4')} ${badge(u.active?'Active':'Inactive',u.active?'#10b981':'#ef4444')}
+      <span style="font-size:12px;font-weight:700;color:var(--primary-light)">${assignedCount(u.name)} active</span>
+      <button class="btn btn-sm btn-primary" onclick="openEditUser('${u.id}')">✏️</button>
+      <button class="btn btn-sm btn-danger" onclick="toggleActive('${u.id}',${u.active})">${u.active?'Deactivate':'Activate'}</button>
+    </div>
+  </div>`).join('')}`;
+}
+function renderAdminSLA(){
+  document.getElementById('adminContent').innerHTML=`<div style="font-weight:700;font-size:15px;margin-bottom:14px">SLA Configuration</div>
+  <div style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:10px;padding:12px;font-size:13px;color:var(--primary-light);margin-bottom:16px">SLA timer starts when logged and stops on Closed.</div>
+  <div class="row3">
+    <div class="form-group"><label class="form-label">🔴 High (mins)</label><input type="number" id="sla-high" value="${SLA_CONFIG.High}" min="5"/></div>
+    <div class="form-group"><label class="form-label">🟡 Medium (mins)</label><input type="number" id="sla-med" value="${SLA_CONFIG.Medium}" min="5"/></div>
+    <div class="form-group"><label class="form-label">🟢 Low (mins)</label><input type="number" id="sla-low" value="${SLA_CONFIG.Low}" min="5"/></div>
+  </div>
+  <button class="btn btn-primary" onclick="saveSLAConfig()">💾 Save SLA</button>`;
+}
+function saveSLAConfig(){SLA_CONFIG.High=parseInt(document.getElementById('sla-high').value)||60;SLA_CONFIG.Medium=parseInt(document.getElementById('sla-med').value)||240;SLA_CONFIG.Low=parseInt(document.getElementById('sla-low').value)||480;db.ref('config/sla').set(SLA_CONFIG);notify('✅ SLA saved!');renderAdmin();}
+function renderAdminPA(){
+  document.getElementById('adminContent').innerHTML=`<div style="font-weight:700;font-size:15px;margin-bottom:14px">Power Automate Integration</div>
+  <div style="background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.2);border-radius:10px;padding:16px;font-size:13px;color:var(--accent);margin-bottom:16px;line-height:1.9">
+    <b>Setup:</b><br>
+    1. Power Automate → <b>When HTTP request received</b><br>
+    2. Paste the POST URL below<br>
+    3. Teams action: use <code style="background:rgba(0,0,0,.2);padding:1px 6px;border-radius:4px">triggerBody()?['teamsMessage']</code> as the message<br>
+    4. Condition on <code style="background:rgba(0,0,0,.2);padding:1px 6px;border-radius:4px">eventType</code>: new_task · task_assigned · scheduled_reminder · major_reminder
+  </div>
+  <div class="form-group"><label class="form-label">HTTP Trigger URL</label><input id="pa-url" style="font-family:monospace;font-size:12px" value="${esc(PA_WEBHOOK_URL)}" placeholder="https://prod-xx.eastus.logic.azure.com:443/workflows/..."/></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="savePAWebhook()">💾 Save</button>
+    <button class="btn btn-gray" onclick="testPAWebhook()">🧪 Test</button>
+    ${PA_WEBHOOK_URL?`<button class="btn btn-danger btn-sm" onclick="clearPAWebhook()">🗑 Remove</button>`:''}
+  </div>`;
+}
+async function savePAWebhook(){const url=document.getElementById('pa-url').value.trim();PA_WEBHOOK_URL=url;await db.ref('config/paWebhook').set(url);notify(url?'✅ Webhook saved!':'Cleared.');renderAdmin();}
+async function testPAWebhook(){if(!PA_WEBHOOK_URL){notify('Enter URL first.','error');return;}const tt={id:'test-001',title:'🧪 ShiftOps v4.0 — Test Alert',description:'Testing PA integration.',type:'Task',shift:getCurrentShift(),priority:'High',status:'Open',submittedBy:curUser.name,assignedTo:curUser.name,date:new Date().toISOString()};await triggerPA(tt,'new_task',{teamsMessage:`🧪 TEST from ShiftOps\n✅ Power Automate connected!\nBy: ${curUser.name}\n👉 https://ayyanartest-ui.github.io/shift-handover`});notify('🧪 Test fired! Check Teams.','info');}
+function clearPAWebhook(){if(!confirm('Remove?'))return;PA_WEBHOOK_URL='';db.ref('config/paWebhook').set('');notify('Removed.');renderAdmin();}
+function renderAdminStats(){
+  const all=taskArr();const breached=all.filter(t=>getSLAInfo(t).breached).length;
+  document.getElementById('adminContent').innerHTML=`<div style="font-weight:700;font-size:15px;margin-bottom:16px">Statistics</div>
+  <div class="stat-grid" style="margin-bottom:16px">
+    ${[['Total',all.length,'#7c3aed'],['Active',all.filter(t=>!isTerminal(t.status)).length,'#f59e0b'],['SLA Breach',breached,'#ef4444'],['Closed',all.filter(t=>isTerminal(t.status)).length,'#10b981']].map(([l,v,c])=>`<div class="stat-card" style="--stat-color:${c}"><div class="stat-num">${v}</div><div class="stat-label">${l}</div></div>`).join('')}
+  </div>
+  <div style="font-weight:700;margin-bottom:10px;font-size:13px">Status Breakdown</div>
+  <div class="badges" style="margin-bottom:16px;flex-wrap:wrap;gap:6px">${STATUSES.map(s=>badge(`${S_ICON[s]} ${s}: ${all.filter(t=>t.status===s).length}`,S_COLOR[s]||'#888')).join('')}</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-danger btn-sm" onclick="clearClosed()">🗑 Clear Closed</button>
+    <button class="btn btn-primary btn-sm" onclick="downloadCSV()">⬇ Export CSV</button>
+  </div>`;
+}
+function clearClosed(){if(!confirm('Remove all closed?'))return;Object.values(tasks).filter(t=>isTerminal(t.status)).forEach(t=>db.ref('tasks/'+t.id).remove());notify('Cleared.');}
+function openAddUser(){document.getElementById('modalTitle').textContent='➕ Add User';document.getElementById('modalBody').innerHTML=userForm({name:'',email:'',password:'',role:'Agent',shift:'Morning',active:true},'saveNewUser()');document.getElementById('modal').style.display='flex';}
+function openEditUser(uid){const u=users[uid];if(!u)return;document.getElementById('modalTitle').textContent='✏️ Edit User';document.getElementById('modalBody').innerHTML=userForm(u,`saveEditUser('${uid}')`);document.getElementById('modal').style.display='flex';}
+function userForm(u,onSave){return`<div class="form-group"><label class="form-label">Full Name *</label><input id="uf-name" value="${esc(u.name)}" placeholder="e.g. Vignesh"/></div>
+  <div class="form-group"><label class="form-label">Email * (@reachmobile.com)</label><input id="uf-email" value="${esc(u.email)}" placeholder="name@reachmobile.com"/></div>
+  <div class="form-group"><label class="form-label">Password *</label><input id="uf-pass" type="password" value="${esc(u.password)}" placeholder="Min 6 characters"/></div>
+  <div class="row2">
+    <div class="form-group"><label class="form-label">Role</label><select id="uf-role">${['Admin','Supervisor','Agent'].map(r=>`<option${r===u.role?' selected':''}>${r}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Shift</label><select id="uf-shift">${SHIFTS.map(s=>`<option${s===u.shift?' selected':''}>${s}</option>`).join('')}</select></div>
+  </div>
+  <div class="form-group"><label class="form-label">Status</label><select id="uf-active"><option value="true"${u.active?' selected':''}>Active</option><option value="false"${!u.active?' selected':''}>Inactive</option></select></div>
+  <button class="btn btn-primary" onclick="${onSave}">💾 Save User</button>`;}
+function getUserFormData(){return{name:document.getElementById('uf-name').value.trim(),email:document.getElementById('uf-email').value.trim().toLowerCase(),password:document.getElementById('uf-pass').value,role:document.getElementById('uf-role').value,shift:document.getElementById('uf-shift').value,active:document.getElementById('uf-active').value==='true'};}
+function validateUser(d){if(!d.name||!d.email||!d.password){notify('Fill all fields.','error');return false;}if(!d.email.endsWith('@reachmobile.com')){notify('Email must be @reachmobile.com','error');return false;}if(d.password.length<6){notify('Password min 6 chars.','error');return false;}return true;}
+function saveNewUser(){const d=getUserFormData();if(!validateUser(d))return;const ni='u'+Date.now();db.ref('users/'+ni).set({id:ni,...d});document.getElementById('modal').style.display='none';notify('✅ User added!');window._adminTab='users';renderAdmin();}
+function saveEditUser(uid){const d=getUserFormData();if(!validateUser(d))return;db.ref('users/'+uid).update(d);document.getElementById('modal').style.display='none';notify('✅ Updated!');window._adminTab='users';renderAdmin();}
+function toggleActive(uid,current){db.ref('users/'+uid).update({active:!current});notify(`User ${!current?'activated':'deactivated'}.`);window._adminTab='users';renderAdmin();}
+function renderAdminShifts(){
+  document.getElementById('adminContent').innerHTML=`<div style="font-weight:700;font-size:15px;margin-bottom:16px">Shift Timing Configuration</div>
+  ${['Morning','Afternoon','Night'].map(sh=>{const c=SHIFTS_CONFIG[sh]||{};return`<div style="background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:16px;margin-bottom:12px">
+    <div style="font-weight:700;margin-bottom:12px">${{Morning:'🌅',Afternoon:'🌆',Night:'🌙'}[sh]} ${sh} Shift</div>
+    <div class="row2">
+      <div class="form-group"><label class="form-label">Start IST</label><input id="sh-${sh}-is" value="${(c.ist||'').split('–')[0]?.trim()||''}"/></div>
+      <div class="form-group"><label class="form-label">End IST</label><input id="sh-${sh}-ie" value="${(c.ist||'').split('–')[1]?.trim()||''}"/></div>
+    </div>
+    <div class="row2">
+      <div class="form-group"><label class="form-label">Start EST</label><input id="sh-${sh}-es" value="${(c.est||'').split('–')[0]?.trim()||''}"/></div>
+      <div class="form-group"><label class="form-label">End EST</label><input id="sh-${sh}-ee" value="${(c.est||'').split('–')[1]?.trim()||''}"/></div>
+    </div>
+    <div class="row2">
+      <div class="form-group"><label class="form-label">Notify IST</label><input id="sh-${sh}-ni" value="${c.notifyIST||''}"/></div>
+      <div class="form-group"><label class="form-label">Notify EST</label><input id="sh-${sh}-ne" value="${c.notifyEST||''}"/></div>
+    </div></div>`;}).join('')}
+  <button class="btn btn-primary" onclick="saveShiftTimings()">💾 Save Timings</button>`;
+}
+function saveShiftTimings(){const u={};['Morning','Afternoon','Night'].forEach(sh=>{u[sh]={ist:`${document.getElementById(`sh-${sh}-is`).value.trim()} – ${document.getElementById(`sh-${sh}-ie`).value.trim()}`,est:`${document.getElementById(`sh-${sh}-es`).value.trim()} – ${document.getElementById(`sh-${sh}-ee`).value.trim()}`,notifyIST:document.getElementById(`sh-${sh}-ni`).value.trim(),notifyEST:document.getElementById(`sh-${sh}-ne`).value.trim()};});db.ref('config/shifts').set(u);Object.assign(SHIFTS_CONFIG,u);notify('✅ Shifts saved!');updateHeader();}
+function downloadCSV(){const headers=['Title','Type','Description','Shift','Priority','Status','Submitted By','Assigned To','Handover Note','Date','Closed','SLA Limit','SLA Status'];const rows=taskArr().map(t=>{const sla=getSLAInfo(t);return[`"${(t.title||'').replace(/"/g,'""')}"`,t.type,`"${(t.description||'').replace(/"/g,'""')}"`,t.shift,t.priority,t.status,`"${(t.submittedBy||'').replace(/"/g,'""')}"`,`"${(t.assignedTo||'').replace(/"/g,'""')}"`,`"${(t.handoverNote||'').replace(/"/g,'""')}"`,fmt(t.date),fmt(t.dateClosed),fmtMins(sla.limitMins),sla.breached?'BREACHED':isTerminal(t.status)&&sla.elapsedMins<=sla.limitMins?'Met':'Active'];});const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`ShiftOps_${new Date().toISOString().slice(0,10)}.csv`;a.click();notify('✅ CSV downloaded!');}
 
-// ── START ────────────────────────────────────────────────────────────
 init();
 </script>
 </body>
