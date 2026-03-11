@@ -3,125 +3,156 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Shift Handover Board</title>
+<title>Shift Handover Board v2.0</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Segoe UI',sans-serif;background:#f0f2f7;color:#1a1a2e;min-height:100vh;}
-.header{background:linear-gradient(135deg,#6264A7,#464775);color:white;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
-.header h1{font-size:18px;font-weight:700;}
-.header p{font-size:12px;opacity:.85;margin-top:2px;}
-.hbtns{display:flex;gap:8px;flex-wrap:wrap;}
-.header-btn{background:white;color:#6264A7;border:none;padding:8px 16px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;}
+
+/* LOGIN */
+.login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#6264A7,#464775);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;}
+.login-card{background:white;border-radius:16px;padding:36px;width:100%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,.25);}
+.login-logo{text-align:center;margin-bottom:20px;}
+.login-logo div:first-child{font-size:44px;}
+.login-logo h2{font-size:22px;font-weight:700;margin-top:8px;color:#1a1a2e;}
+.login-logo p{font-size:13px;color:#888;margin-top:4px;}
+.login-error{background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;color:#dc2626;margin-bottom:12px;display:none;}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#6264A7,#464775);color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.header h1{font-size:17px;font-weight:700;}
+.header p{font-size:11px;opacity:.85;margin-top:2px;}
+.hbtns{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.hbtn{background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;}
+.hbtn.white{background:white;color:#6264A7;}
+.hbtn.red{background:#ef4444;border-color:#ef4444;}
+
+/* NAV */
 nav{display:flex;gap:4px;background:white;padding:8px 16px;box-shadow:0 2px 6px rgba(0,0,0,.08);overflow-x:auto;}
-nav button{padding:8px 16px;border:none;border-radius:6px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap;background:transparent;color:#555;}
+nav button{padding:7px 14px;border:none;border-radius:6px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;background:transparent;color:#555;}
 nav button.active{background:#6264A7;color:white;}
-.container{max-width:900px;margin:0 auto;padding:16px;}
+
+.container{max-width:960px;margin:0 auto;padding:16px;}
 .card{background:white;border-radius:12px;padding:20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
-.stat-card{background:white;border-radius:10px;padding:16px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.06);}
-.stat-num{font-size:28px;font-weight:800;}
-.stat-label{font-size:12px;color:#777;margin-top:4px;}
+
+/* STATS */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.stat-card{background:white;border-radius:10px;padding:14px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.06);}
+.stat-num{font-size:26px;font-weight:800;}
+.stat-label{font-size:11px;color:#777;margin-top:3px;}
+
+/* FORMS */
 label.lbl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#555;margin-bottom:4px;}
-input,select,textarea{width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid #e0e0e0;font-size:14px;outline:none;margin-bottom:10px;font-family:inherit;background:white;}
+input,select,textarea{width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #e0e0e0;font-size:14px;outline:none;margin-bottom:10px;font-family:inherit;background:white;}
 input:focus,select:focus,textarea:focus{border-color:#6264A7;}
-textarea{min-height:85px;resize:vertical;}
+textarea{min-height:80px;resize:vertical;}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.btn{padding:10px 22px;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;color:white;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.btn{padding:9px 20px;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;color:white;}
 .btn-primary{background:#6264A7;}
+.btn-success{background:#22c55e;}
 .btn-danger{background:#ef4444;}
-.btn-sm{padding:7px 14px;font-size:12px;}
+.btn-orange{background:#f59e0b;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-outline{background:white;border:2px solid #6264A7;color:#6264A7;}
+
+/* TASK CARDS */
 .task-card{background:white;border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:4px solid #6264A7;cursor:pointer;transition:transform .15s;}
 .task-card:hover{transform:translateX(3px);}
 .task-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;}
 .task-title{font-weight:700;font-size:14px;}
-.task-meta{font-size:12px;color:#aaa;margin-top:4px;}
-.badges{display:flex;gap:6px;flex-wrap:wrap;}
-.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700;}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;}
-.modal{background:white;border-radius:14px;padding:24px;width:100%;max-width:480px;box-shadow:0 8px 32px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto;}
-.modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
-.modal-title{font-weight:700;font-size:16px;flex:1;}
-.close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;line-height:1;}
-.status-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
-.status-btn{padding:8px 14px;border-radius:7px;font-weight:700;font-size:13px;cursor:pointer;border:2px solid;}
-.notif{position:fixed;top:16px;right:16px;padding:12px 20px;border-radius:8px;font-weight:600;font-size:14px;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2);color:white;animation:slideIn .3s ease;}
-@keyframes slideIn{from{transform:translateX(60px);opacity:0;}to{transform:translateX(0);opacity:1;}}
-.progress-wrap{background:#f0f0f0;border-radius:6px;height:10px;overflow:hidden;margin:6px 0 10px;}
-.progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#6264A7,#22c55e);transition:width .5s;}
-.empty{text-align:center;padding:30px;color:#aaa;font-size:14px;}
-.section-title{font-weight:700;font-size:15px;margin-bottom:12px;}
-.desc-box{font-size:13px;color:#555;background:#f7f7f7;padding:12px;border-radius:8px;margin-bottom:14px;line-height:1.6;}
-.filter-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
-@media(max-width:600px){.stat-grid{grid-template-columns:repeat(2,1fr);}.row2,.filter-row{grid-template-columns:1fr;}}
+.task-meta{font-size:11px;color:#aaa;margin-top:5px;}
+.badges{display:flex;gap:5px;flex-wrap:wrap;}
+.badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:700;}
 
-/* VOICE BUTTON */
-.voice-area{background:linear-gradient(135deg,#f0f0ff,#e8e8fa);border:2px dashed #6264A7;border-radius:14px;padding:20px;margin-bottom:18px;text-align:center;}
-.voice-area p{font-size:13px;color:#555;margin-bottom:12px;}
-.mic-btn{width:70px;height:70px;border-radius:50%;border:none;cursor:pointer;font-size:28px;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;background:linear-gradient(135deg,#6264A7,#464775);color:white;box-shadow:0 4px 14px rgba(98,100,167,.4);}
-.mic-btn:hover{transform:scale(1.08);}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal{background:white;border-radius:14px;padding:24px;width:100%;max-width:500px;box-shadow:0 8px 32px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto;}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+.modal-title{font-weight:700;font-size:16px;flex:1;padding-right:10px;}
+.close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;}
+
+/* NOTIF */
+.notif{position:fixed;top:16px;right:16px;padding:12px 20px;border-radius:8px;font-weight:600;font-size:13px;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2);color:white;animation:slideIn .3s ease;max-width:320px;}
+@keyframes slideIn{from{transform:translateX(60px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+/* MISC */
+.section-title{font-weight:700;font-size:15px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.empty{text-align:center;padding:28px;color:#aaa;font-size:14px;}
+.progress-wrap{background:#f0f0f0;border-radius:6px;height:8px;overflow:hidden;margin:6px 0 10px;}
+.progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#6264A7,#22c55e);transition:width .5s;}
+.announce{background:linear-gradient(135deg,#e8f4fd,#dbeafe);border:1px solid #93c5fd;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#1e40af;}
+.shift-info{background:#f5f5ff;border-radius:8px;padding:10px 14px;font-size:12px;color:#6264A7;margin-bottom:14px;display:flex;gap:16px;flex-wrap:wrap;}
+.shift-info span{font-weight:600;}
+.divider{height:1px;background:#f0f0f0;margin:14px 0;}
+.filter-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.sort-btn{padding:6px 12px;border-radius:6px;border:1.5px solid #6264A7;background:white;color:#6264A7;font-size:12px;font-weight:600;cursor:pointer;}
+.sort-btn.active{background:#6264A7;color:white;}
+.voice-area{background:linear-gradient(135deg,#f0f0ff,#e8e8fa);border:2px dashed #6264A7;border-radius:12px;padding:16px;margin-bottom:16px;text-align:center;}
+.mic-btn{width:64px;height:64px;border-radius:50%;border:none;cursor:pointer;font-size:26px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#6264A7,#464775);color:white;box-shadow:0 4px 14px rgba(98,100,167,.4);transition:all .2s;}
 .mic-btn.listening{background:linear-gradient(135deg,#ef4444,#dc2626);animation:pulse 1s infinite;}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4);}50%{box-shadow:0 0 0 14px rgba(239,68,68,0);}}
-.transcript-box{background:white;border-radius:8px;padding:12px;margin-top:12px;font-size:13px;color:#444;min-height:40px;border:1.5px solid #e0e0e0;text-align:left;line-height:1.6;}
-.ai-status{font-size:12px;color:#6264A7;font-weight:600;margin-top:8px;}
-.ai-filled{background:#e8f7e8;border:1.5px solid #22c55e;border-radius:8px;padding:10px 14px;margin:10px 0;font-size:13px;color:#155724;}
-
-/* PROFILE SETUP */
-.profile-screen{position:fixed;inset:0;background:linear-gradient(135deg,#6264A7,#464775);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;}
-.profile-card{background:white;border-radius:16px;padding:32px;width:100%;max-width:400px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.2);}
-.profile-card h2{font-size:20px;font-weight:700;margin-bottom:6px;}
-.profile-card p{font-size:13px;color:#888;margin-bottom:20px;}
-.profile-card input,.profile-card select{margin-bottom:12px;}
-.announce{background:linear-gradient(135deg,#e8f4fd,#dbeafe);border:1px solid #93c5fd;border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px;color:#1e40af;}
-.announce strong{display:block;font-size:14px;margin-bottom:4px;}
+.transcript-box{background:white;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:13px;color:#444;min-height:36px;border:1.5px solid #e0e0e0;text-align:left;line-height:1.6;}
+.admin-section{background:#fff8f0;border:1px solid #fed7aa;border-radius:10px;padding:16px;margin-bottom:14px;}
+.user-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:13px;}
+.user-row:last-child{border-bottom:none;}
+@media(max-width:600px){
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .row2,.row3,.filter-row{grid-template-columns:1fr;}
+}
 </style>
 </head>
 <body>
 
-<!-- Profile Setup Screen -->
-<div class="profile-screen" id="profileScreen">
-  <div class="profile-card">
-    <div style="font-size:40px;margin-bottom:8px">👤</div>
-    <h2>Welcome to Shift Handover</h2>
-    <p>Set up your profile once — we'll remember you forever on this device!</p>
-    <label class="lbl">Your Full Name *</label>
-    <input id="p-name" placeholder="e.g. Ravi Kumar"/>
-    <label class="lbl">Your Shift *</label>
-    <select id="p-shift">
-      <option value="">Select your shift</option>
-      <option>Morning</option><option>Evening</option><option>Night</option>
-    </select>
-    <label class="lbl">Your Role / Designation</label>
-    <input id="p-role" placeholder="e.g. Shift Supervisor"/>
-    <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="saveProfile()">✅ Save & Continue</button>
+<!-- LOGIN -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div>🔄</div>
+      <h2>Shift Handover Board</h2>
+      <p>Sign in with your @reachmobile.com account</p>
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <label class="lbl">Email Address</label>
+    <input id="loginEmail" type="email" placeholder="yourname@reachmobile.com" style="margin-bottom:10px"/>
+    <label class="lbl">Password</label>
+    <input id="loginPassword" type="password" placeholder="Enter your password" style="margin-bottom:16px"/>
+    <button class="btn btn-primary" style="width:100%;padding:12px" onclick="doLogin()">🔐 Sign In</button>
+    <div style="text-align:center;margin-top:12px;font-size:12px;color:#aaa;">Only @reachmobile.com accounts are allowed</div>
   </div>
 </div>
 
-<div class="header">
-  <div>
-    <h1>🔄 Shift Handover Board</h1>
-    <p id="headerInfo">Loading...</p>
+<!-- MAIN APP -->
+<div id="mainApp" style="display:none">
+  <div class="header">
+    <div>
+      <h1>🔄 Shift Handover Board <span style="font-size:11px;opacity:.7;font-weight:400;">v2.0</span></h1>
+      <p id="headerInfo">Loading...</p>
+    </div>
+    <div class="hbtns">
+      <button class="hbtn" onclick="sendTeamsNotification()">📢 Notify Teams</button>
+      <button class="hbtn white" onclick="downloadCSV()">⬇ Excel</button>
+      <button class="hbtn" id="userBtn" onclick="showView('profile')">👤</button>
+      <button class="hbtn red" onclick="doLogout()">Sign Out</button>
+    </div>
   </div>
-  <div class="hbtns">
-    <button class="header-btn" onclick="downloadCSV()">⬇ Excel</button>
-    <button class="header-btn" onclick="showView('log')">🎤 Log Task</button>
-    <button class="header-btn" style="background:rgba(255,255,255,0.2);color:white;" onclick="resetProfile()">👤 <span id="profileName"></span></button>
+  <nav>
+    <button class="active" onclick="showView('dashboard',this)">📊 Dashboard</button>
+    <button onclick="showView('tasks',this)">📋 All Tasks</button>
+    <button onclick="showView('log',this)">🎤 Log Item</button>
+    <button onclick="showView('summary',this)">📈 Summary</button>
+    <button onclick="showView('admin',this)" id="adminTab" style="display:none">⚙️ Admin</button>
+  </nav>
+  <div class="container">
+    <div id="view-dashboard"></div>
+    <div id="view-tasks" style="display:none"></div>
+    <div id="view-log" style="display:none"></div>
+    <div id="view-summary" style="display:none"></div>
+    <div id="view-admin" style="display:none"></div>
+    <div id="view-profile" style="display:none"></div>
   </div>
 </div>
 
-<nav>
-  <button class="active" onclick="showView('dashboard',this)">📊 Dashboard</button>
-  <button onclick="showView('tasks',this)">📋 All Tasks</button>
-  <button onclick="showView('log',this)">🎤 Log Task</button>
-  <button onclick="showView('summary',this)">📈 Summary</button>
-</nav>
-
-<div class="container">
-  <div id="view-dashboard"></div>
-  <div id="view-tasks" style="display:none"></div>
-  <div id="view-log" style="display:none"></div>
-  <div id="view-summary" style="display:none"></div>
-</div>
-
+<!-- MODAL -->
 <div class="overlay" id="modal" style="display:none" onclick="closeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-header">
@@ -134,166 +165,321 @@ textarea{min-height:85px;resize:vertical;}
 <div class="notif" id="notif" style="display:none"></div>
 
 <script>
-const SHIFTS=['Morning','Evening','Night'];
-const PRIORITIES=['High','Medium','Low'];
-const STATUSES=['Pending','In Progress','Done'];
-const P_COLOR={High:'#ef4444',Medium:'#f59e0b',Low:'#22c55e'};
-const S_COLOR={'Pending':'#f59e0b','In Progress':'#3b82f6','Done':'#22c55e'};
-const P_ICON={High:'🔴',Medium:'🟡',Low:'🟢'};
-const S_ICON={'Pending':'⏳','In Progress':'🔄','Done':'✅'};
+// ─── STATIC USER LIST ───────────────────────────────────────────────
+// Admin: update this list to add/remove users
+const USERS = [
+  {id:'u1', name:'Admin User',      email:'admin@reachmobile.com',    password:'Admin@123',   role:'Admin',       shift:'All',       active:true},
+  {id:'u2', name:'Ravi Kumar',      email:'ravi@reachmobile.com',     password:'Ravi@123',    role:'Supervisor',  shift:'Morning',   active:true},
+  {id:'u3', name:'Priya Sharma',    email:'priya@reachmobile.com',    password:'Priya@123',   role:'Agent',       shift:'Morning',   active:true},
+  {id:'u4', name:'Arun Mehta',      email:'arun@reachmobile.com',     password:'Arun@123',    role:'Agent',       shift:'Afternoon', active:true},
+  {id:'u5', name:'Sneha Reddy',     email:'sneha@reachmobile.com',    password:'Sneha@123',   role:'Supervisor',  shift:'Afternoon', active:true},
+  {id:'u6', name:'Kiran Patel',     email:'kiran@reachmobile.com',    password:'Kiran@123',   role:'Agent',       shift:'Night',     active:true},
+  {id:'u7', name:'Divya Thomas',    email:'divya@reachmobile.com',    password:'Divya@123',   role:'Agent',       shift:'Night',     active:true},
+];
 
-let tasks=JSON.parse(localStorage.getItem('handover_tasks')||'[]');
-let profile=JSON.parse(localStorage.getItem('handover_profile')||'null');
-let curView='dashboard';
-let recognition=null;
-let isListening=false;
+// ─── SHIFT CONFIG (IST + EST) ────────────────────────────────────────
+const SHIFTS_CONFIG = {
+  Morning:   {ist:'6:00 AM – 3:00 PM',   est:'7:30 PM – 4:30 AM', notifyIST:'6:15 AM',  notifyEST:'7:45 PM'},
+  Afternoon: {ist:'2:00 PM – 11:00 PM',  est:'3:30 AM – 1:30 PM', notifyIST:'2:15 PM',  notifyEST:'3:45 AM'},
+  Night:     {ist:'9:00 PM – 6:00 AM',   est:'10:30 AM – 8:30 PM',notifyIST:'9:15 PM',  notifyEST:'10:45 AM'},
+};
 
-// Profile
-function saveProfile(){
-  const name=document.getElementById('p-name').value.trim();
-  const shift=document.getElementById('p-shift').value;
-  const role=document.getElementById('p-role').value.trim();
-  if(!name||!shift){notify('Please enter your name and shift.','error');return;}
-  profile={name,shift,role};
-  localStorage.setItem('handover_profile',JSON.stringify(profile));
-  document.getElementById('profileScreen').style.display='none';
-  document.getElementById('profileName').textContent=name;
-  init();
-}
+const SHIFTS    = ['All','Morning','Afternoon','Night'];
+const PRIORITIES= ['High','Medium','Low'];
+const STATUSES  = ['Open','In Progress','Closed'];
+const ITEM_TYPES= ['Task','Email','Chat','Ticket','Note'];
+const P_COLOR   = {High:'#ef4444',Medium:'#f59e0b',Low:'#22c55e'};
+const S_COLOR   = {Open:'#f59e0b','In Progress':'#3b82f6',Closed:'#6b7280'};
+const P_ICON    = {High:'🔴',Medium:'🟡',Low:'🟢'};
+const S_ICON    = {Open:'📬','In Progress':'🔄',Closed:'✅'};
+const T_ICON    = {Task:'📋',Email:'📧',Chat:'💬',Ticket:'🎫',Note:'📝'};
+const ROLE_COLOR= {Admin:'#7c3aed',Supervisor:'#0078d4',Agent:'#22c55e'};
 
-function resetProfile(){
-  if(confirm('Change your profile?')){
-    localStorage.removeItem('handover_profile');
-    location.reload();
-  }
-}
+let tasks   = JSON.parse(localStorage.getItem('ho_tasks') || '[]');
+let curUser = JSON.parse(localStorage.getItem('ho_user')  || 'null');
+let curView = 'dashboard';
+let sortBy  = 'priority';
+let recognition = null;
+let isListening = false;
 
+// ─── HELPERS ─────────────────────────────────────────────────────────
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
-function save(){localStorage.setItem('handover_tasks',JSON.stringify(tasks));}
-function fmt(d){return new Date(d).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
-function getCurrentShift(){const h=new Date().getHours();return h>=6&&h<14?'Morning':h>=14&&h<22?'Evening':'Night';}
-
+function save(){localStorage.setItem('ho_tasks',JSON.stringify(tasks));}
+function fmt(d){return d?new Date(d).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—';}
+function esc(s){return s?(s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''; }
+function badge(t,c){return `<span class="badge" style="background:${c}22;color:${c}">${t}</span>`;}
+function getCurrentShift(){
+  const h=new Date().getHours();
+  if(h>=6&&h<14) return 'Morning';
+  if(h>=14&&h<21) return 'Afternoon';
+  return 'Night';
+}
 function notify(msg,type='success'){
   const n=document.getElementById('notif');
-  n.textContent=msg;n.style.background=type==='error'?'#ef4444':type==='info'?'#3b82f6':'#22c55e';
-  n.style.display='block';setTimeout(()=>n.style.display='none',3500);
+  n.textContent=msg;
+  n.style.background=type==='error'?'#ef4444':type==='info'?'#3b82f6':type==='warn'?'#f59e0b':'#22c55e';
+  n.style.display='block';
+  setTimeout(()=>n.style.display='none',3500);
+}
+function sortTasks(arr){
+  const pOrder={High:0,Medium:1,Low:2};
+  const sOrder={Open:0,'In Progress':1,Closed:2};
+  return [...arr].sort((a,b)=>{
+    if(sortBy==='priority') return (pOrder[a.priority]??1)-(pOrder[b.priority]??1)||sOrder[a.status]-sOrder[b.status];
+    if(sortBy==='status')   return sOrder[a.status]-sOrder[b.status];
+    if(sortBy==='newest')   return new Date(b.date)-new Date(a.date);
+    return 0;
+  });
 }
 
-function badge(text,color){return `<span class="badge" style="background:${color}22;color:${color}">${text}</span>`;}
+// ─── AUTH ─────────────────────────────────────────────────────────────
+function doLogin(){
+  const email   = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password= document.getElementById('loginPassword').value;
+  const errEl   = document.getElementById('loginError');
+  errEl.style.display='none';
 
+  if(!email.endsWith('@reachmobile.com')){
+    errEl.textContent='❌ Only @reachmobile.com email addresses are allowed.';
+    errEl.style.display='block'; return;
+  }
+  const user = USERS.find(u=>u.email.toLowerCase()===email && u.password===password);
+  if(!user){
+    errEl.textContent='❌ Invalid email or password. Please try again.';
+    errEl.style.display='block'; return;
+  }
+  if(!user.active){
+    errEl.textContent='❌ Your account is inactive. Contact admin.';
+    errEl.style.display='block'; return;
+  }
+  curUser=user;
+  localStorage.setItem('ho_user',JSON.stringify(user));
+  bootApp();
+}
+
+function doLogout(){
+  if(!confirm('Sign out?'))return;
+  localStorage.removeItem('ho_user');
+  curUser=null;
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('loginEmail').value='';
+  document.getElementById('loginPassword').value='';
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none')doLogin();});
+
+// ─── BOOT ─────────────────────────────────────────────────────────────
+function bootApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  if(curUser.role==='Admin') document.getElementById('adminTab').style.display='inline-block';
+  document.getElementById('userBtn').textContent='👤 '+curUser.name.split(' ')[0];
+  updateHeader();
+  if(tasks.length===0) seedSampleTasks();
+  renderDashboard();
+}
+
+function updateHeader(){
+  const sh=getCurrentShift();
+  const cfg=SHIFTS_CONFIG[sh];
+  document.getElementById('headerInfo').textContent=
+    `${curUser.name} • ${curUser.role} • ${sh} Shift | IST: ${cfg.ist} | EST: ${cfg.est}`;
+}
+
+function seedSampleTasks(){
+  tasks=[
+    {id:uid(),title:'Database backup failed',description:'Scheduled backup at 2PM failed. Check logs and retry.',type:'Task',shift:'Morning',priority:'High',status:'Open',submittedBy:'Ravi Kumar',submittedByEmail:'ravi@reachmobile.com',assignedTo:'',date:new Date(Date.now()-3600000).toISOString(),dateClosed:''},
+    {id:uid(),title:'Customer email thread #4521',description:'Customer reported login issue over email. Needs follow-up.',type:'Email',shift:'Morning',priority:'Medium',status:'In Progress',submittedBy:'Priya Sharma',submittedByEmail:'priya@reachmobile.com',assignedTo:'Arun Mehta',date:new Date(Date.now()-7200000).toISOString(),dateClosed:''},
+    {id:uid(),title:'Server room AC alarm',description:'Minor temperature fluctuation. Monitoring required.',type:'Task',shift:'Afternoon',priority:'Low',status:'Open',submittedBy:'Arun Mehta',submittedByEmail:'arun@reachmobile.com',assignedTo:'',date:new Date(Date.now()-1800000).toISOString(),dateClosed:''},
+    {id:uid(),title:'Teams chat follow-up with vendor',description:'Vendor asked about API integration timeline in Teams chat.',type:'Chat',shift:'Afternoon',priority:'Medium',status:'Open',submittedBy:'Sneha Reddy',submittedByEmail:'sneha@reachmobile.com',assignedTo:'',date:new Date(Date.now()-900000).toISOString(),dateClosed:''},
+    {id:uid(),title:'Ticket #TK-882 escalated',description:'Priority 1 ticket escalated by customer. Needs immediate attention.',type:'Ticket',shift:'Night',priority:'High',status:'Open',submittedBy:'Kiran Patel',submittedByEmail:'kiran@reachmobile.com',assignedTo:'',date:new Date(Date.now()-600000).toISOString(),dateClosed:''},
+  ];
+  save();
+}
+
+// ─── VIEW ROUTER ──────────────────────────────────────────────────────
 function showView(v,btn){
   curView=v;
-  ['dashboard','tasks','log','summary'].forEach(x=>{document.getElementById('view-'+x).style.display=x===v?'block':'none';});
+  ['dashboard','tasks','log','summary','admin','profile'].forEach(x=>{
+    document.getElementById('view-'+x).style.display=x===v?'block':'none';
+  });
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');
-  else{const btns=document.querySelectorAll('nav button');const idx={dashboard:0,tasks:1,log:2,summary:3}[v];if(btns[idx])btns[idx].classList.add('active');}
+  if(btn) btn.classList.add('active');
+  else{
+    const map={dashboard:0,tasks:1,log:2,summary:3,admin:4};
+    const btns=document.querySelectorAll('nav button');
+    if(map[v]!==undefined && btns[map[v]]) btns[map[v]].classList.add('active');
+  }
   render(v);
 }
-
 function render(v){
-  if(v==='dashboard')renderDashboard();
-  if(v==='tasks')renderTasks();
-  if(v==='log')renderLog();
-  if(v==='summary')renderSummary();
+  if(v==='dashboard') renderDashboard();
+  if(v==='tasks')     renderTasks();
+  if(v==='log')       renderLog();
+  if(v==='summary')   renderSummary();
+  if(v==='admin')     renderAdmin();
+  if(v==='profile')   renderProfile();
 }
 
+// ─── DASHBOARD ───────────────────────────────────────────────────────
 function renderDashboard(){
-  const shift=getCurrentShift();
-  const now=new Date();
-  document.getElementById('headerInfo').textContent=`Current Shift: ${shift} • ${now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}`;
-  const total=tasks.length,pending=tasks.filter(t=>t.status==='Pending').length,ip=tasks.filter(t=>t.status==='In Progress').length,done=tasks.filter(t=>t.status==='Done').length;
-  const shiftOpen=tasks.filter(t=>t.shift===shift&&t.status!=='Done');
-  let html=`<div class="announce"><strong>👋 Welcome, ${profile?profile.name:'Team Member'}!</strong>You are on <b>${profile?profile.shift:shift} Shift</b>. There are <b>${shiftOpen.length}</b> open task(s) pending.</div>
+  const sh=getCurrentShift();
+  const cfg=SHIFTS_CONFIG[sh];
+  const open=tasks.filter(t=>t.status==='Open');
+  const ip=tasks.filter(t=>t.status==='In Progress');
+  const closed=tasks.filter(t=>t.status==='Closed');
+  const shiftOpen=sortTasks(tasks.filter(t=>(t.shift===sh||t.shift==='All')&&t.status!=='Closed'));
+
+  document.getElementById('view-dashboard').innerHTML=`
+  <div class="announce"><strong>👋 Welcome, ${esc(curUser.name)}! You are on ${sh} Shift</strong>
+  IST: ${cfg.ist} | EST: ${cfg.est} | Notification at: ${cfg.notifyIST} IST / ${cfg.notifyEST} EST</div>
   <div class="stat-grid">
-    ${[['Total',total,'#6264A7'],['Pending',pending,'#f59e0b'],['In Progress',ip,'#3b82f6'],['Done',done,'#22c55e']].map(([l,v,c])=>`<div class="stat-card" style="border-top:4px solid ${c}"><div class="stat-num" style="color:${c}">${v}</div><div class="stat-label">${l}</div></div>`).join('')}
+    ${[['Total',tasks.length,'#6264A7'],['Open',open.length,'#f59e0b'],['In Progress',ip.length,'#3b82f6'],['Closed',closed.length,'#6b7280']].map(([l,v,c])=>`
+    <div class="stat-card" style="border-top:4px solid ${c}">
+      <div class="stat-num" style="color:${c}">${v}</div>
+      <div class="stat-label">${l}</div>
+    </div>`).join('')}
   </div>
-  <div class="card"><div class="section-title">⚠️ ${shift} Shift — Open Tasks (${shiftOpen.length})</div>
-    ${shiftOpen.length===0?'<div class="empty">✅ No pending tasks for this shift!</div>':shiftOpen.map(t=>taskCardHTML(t)).join('')}
+  <div class="card">
+    <div class="section-title">
+      ⚠️ ${sh} Shift — Active Items (${shiftOpen.length})
+      <div style="display:flex;gap:6px">
+        ${['priority','newest','status'].map(s=>`<button class="sort-btn${sortBy===s?' active':''}" onclick="sortBy='${s}';renderDashboard()">${{priority:'🎯 Priority',newest:'🕐 Newest',status:'📊 Status'}[s]}</button>`).join('')}
+      </div>
+    </div>
+    ${shiftOpen.length===0?'<div class="empty">✅ No active items for this shift!</div>':shiftOpen.map(t=>taskCardHTML(t)).join('')}
   </div>
-  <div class="card"><div class="section-title">📋 Recent Tasks</div>
-    ${tasks.slice(0,5).map(t=>taskCardHTML(t)).join('')}
-    <button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="showView('tasks')">View All Tasks →</button>
+  <div class="card">
+    <div class="section-title">📋 All Recent Items
+      <button class="btn btn-primary btn-sm" onclick="showView('tasks')">View All →</button>
+    </div>
+    ${sortTasks(tasks).slice(0,5).map(t=>taskCardHTML(t)).join('')}
   </div>`;
-  document.getElementById('view-dashboard').innerHTML=html;
 }
 
+// ─── TASK CARD ────────────────────────────────────────────────────────
 function taskCardHTML(t){
   return `<div class="task-card" style="border-left-color:${P_COLOR[t.priority]}" onclick="openTask('${t.id}')">
-    <div class="task-top"><div class="task-title">${P_ICON[t.priority]} ${esc(t.title)}</div>
-    <div class="badges">${badge(t.priority,P_COLOR[t.priority])}${badge(S_ICON[t.status]+' '+t.status,S_COLOR[t.status])}${badge(t.shift,'#6264A7')}</div></div>
-    ${t.description?`<div style="font-size:13px;color:#666;margin:5px 0 2px">${esc(t.description).substring(0,90)}${t.description.length>90?'...':''}</div>`:''}
-    <div class="task-meta">By ${esc(t.submittedBy)} ${t.role?'('+esc(t.role)+')':''} • ${fmt(t.date)}</div>
+    <div class="task-top">
+      <div class="task-title">${T_ICON[t.type]||'📋'} ${esc(t.title)}</div>
+      <div class="badges">
+        ${badge(P_ICON[t.priority]+' '+t.priority, P_COLOR[t.priority])}
+        ${badge(S_ICON[t.status]+' '+t.status, S_COLOR[t.status])}
+        ${badge(t.type,'#6264A7')}
+        ${badge(t.shift,'#0891b2')}
+      </div>
+    </div>
+    ${t.description?`<div style="font-size:12px;color:#666;margin:5px 0 2px">${esc(t.description).substring(0,85)}${t.description.length>85?'...':''}</div>`:''}
+    <div class="task-meta">
+      By ${esc(t.submittedBy)} • ${fmt(t.date)}
+      ${t.assignedTo?` • 🔄 Assigned: ${esc(t.assignedTo)}`:''}
+    </div>
   </div>`;
 }
 
+// ─── ALL TASKS ────────────────────────────────────────────────────────
 function renderTasks(){
-  const sf=document.getElementById('f-shift')?document.getElementById('f-shift').value:'All';
-  const stf=document.getElementById('f-status')?document.getElementById('f-status').value:'All';
-  const pf=document.getElementById('f-priority')?document.getElementById('f-priority').value:'All';
-  const filtered=tasks.filter(t=>(sf==='All'||t.shift===sf)&&(stf==='All'||t.status===stf)&&(pf==='All'||t.priority===pf));
-  let html=`<div class="card"><div class="section-title">🔍 Filter Tasks</div>
+  const sf  = document.getElementById('f-shift')   ?.value||'All';
+  const stf = document.getElementById('f-status')  ?.value||'All';
+  const pf  = document.getElementById('f-priority')?.value||'All';
+  const tf  = document.getElementById('f-type')    ?.value||'All';
+  let filtered=tasks.filter(t=>
+    (sf==='All'||t.shift===sf)&&
+    (stf==='All'||t.status===stf)&&
+    (pf==='All'||t.priority===pf)&&
+    (tf==='All'||t.type===tf)
+  );
+  filtered=sortTasks(filtered);
+
+  document.getElementById('view-tasks').innerHTML=`
+  <div class="card">
+    <div class="section-title">🔍 Filter & Sort
+      <div style="display:flex;gap:6px">
+        ${['priority','newest','status'].map(s=>`<button class="sort-btn${sortBy===s?' active':''}" onclick="sortBy='${s}';renderTasks()">${{priority:'🎯',newest:'🕐',status:'📊'}[s]}</button>`).join('')}
+      </div>
+    </div>
     <div class="filter-row">
-      <div><label class="lbl">Shift</label><select id="f-shift" onchange="renderTasks()"><option>All</option>${SHIFTS.map(s=>`<option${sf===s?' selected':''}>${s}</option>`).join('')}</select></div>
-      <div><label class="lbl">Status</label><select id="f-status" onchange="renderTasks()"><option>All</option>${STATUSES.map(s=>`<option${stf===s?' selected':''}>${s}</option>`).join('')}</select></div>
-      <div><label class="lbl">Priority</label><select id="f-priority" onchange="renderTasks()"><option>All</option>${PRIORITIES.map(p=>`<option${pf===p?' selected':''}>${p}</option>`).join('')}</select></div>
-    </div></div>
-  <div style="font-size:13px;color:#888;margin-bottom:8px">${filtered.length} task(s) found</div>
-  ${filtered.length===0?'<div class="card empty">No tasks match this filter.</div>':filtered.map(t=>taskCardHTML(t)).join('')}`;
-  document.getElementById('view-tasks').innerHTML=html;
+      <div><label class="lbl">Shift</label>
+        <select id="f-shift" onchange="renderTasks()"><option>All</option>${SHIFTS.map(s=>`<option${sf===s?' selected':''}>${s}</option>`).join('')}</select></div>
+      <div><label class="lbl">Status</label>
+        <select id="f-status" onchange="renderTasks()"><option>All</option>${STATUSES.map(s=>`<option${stf===s?' selected':''}>${s}</option>`).join('')}</select></div>
+      <div><label class="lbl">Priority</label>
+        <select id="f-priority" onchange="renderTasks()"><option>All</option>${PRIORITIES.map(p=>`<option${pf===p?' selected':''}>${p}</option>`).join('')}</select></div>
+      <div><label class="lbl">Type</label>
+        <select id="f-type" onchange="renderTasks()"><option>All</option>${ITEM_TYPES.map(t=>`<option${tf===t?' selected':''}>${t}</option>`).join('')}</select></div>
+    </div>
+  </div>
+  <div style="font-size:13px;color:#888;margin-bottom:8px">${filtered.length} item(s) found</div>
+  ${filtered.length===0?'<div class="card empty">No items match this filter.</div>':filtered.map(t=>taskCardHTML(t)).join('')}`;
 }
 
-// ── VOICE + AI LOG FORM ──
+// ─── LOG ITEM ─────────────────────────────────────────────────────────
 function renderLog(){
-  const p=profile||{name:'',shift:getCurrentShift(),role:''};
   document.getElementById('view-log').innerHTML=`
   <div class="card">
-    <div class="section-title">🎤 Voice + AI Task Logger</div>
+    <div class="section-title">🎤 Log Handover Item</div>
     <div class="voice-area">
-      <p>Tap the mic and describe the task in your own words.<br/>AI will auto-fill all fields with spelling correction!</p>
+      <p style="font-size:13px;color:#555;margin-bottom:10px">Tap mic and speak — app auto-fills the form!</p>
       <button class="mic-btn" id="micBtn" onclick="toggleVoice()">🎤</button>
-      <div id="aiStatus" class="ai-status" style="margin-top:10px"></div>
+      <div id="aiStatus" style="font-size:12px;color:#6264A7;font-weight:600;margin-top:8px"></div>
       <div class="transcript-box" id="transcriptBox">Your speech will appear here...</div>
-      <div id="aiFilled" style="display:none" class="ai-filled">✅ AI filled the form below! Review and submit.</div>
     </div>
-    <div style="border-top:1px solid #eee;padding-top:16px;margin-top:4px">
-      <label class="lbl">Your Name</label>
-      <input id="f-name" value="${esc(p.name)}" placeholder="Your name"/>
-      <label class="lbl">Task Name *</label>
-      <input id="f-title" placeholder="e.g. Server backup failed"/>
-      <label class="lbl">Description / Notes</label>
-      <textarea id="f-desc" placeholder="Describe what's pending..."></textarea>
-      <div class="row2">
-        <div><label class="lbl">Shift</label>
-          <select id="f-taskshift">${SHIFTS.map(s=>`<option${s===p.shift?' selected':''}>${s}</option>`).join('')}</select>
-        </div>
-        <div><label class="lbl">Priority</label>
-          <select id="f-pri">${PRIORITIES.map(pr=>`<option${pr==='Medium'?' selected':''}>${pr}</option>`).join('')}</select>
-        </div>
-      </div>
-      <button class="btn btn-primary" onclick="submitTask()">✅ Submit Task</button>
+    <div class="row2">
+      <div><label class="lbl">Your Name</label>
+        <input id="f-name" value="${esc(curUser.name)}" readonly style="background:#f5f5f5"/></div>
+      <div><label class="lbl">Item Type *</label>
+        <select id="f-type-log">${ITEM_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></div>
     </div>
+    <label class="lbl">Title *</label>
+    <input id="f-title" placeholder="e.g. Server backup failed"/>
+    <label class="lbl">Description / Notes</label>
+    <textarea id="f-desc" placeholder="Describe what's pending and context for next shift..."></textarea>
+    <div class="row3">
+      <div><label class="lbl">Shift</label>
+        <select id="f-shift-log">${SHIFTS.map(s=>`<option${s===curUser.shift?' selected':''}>${s}</option>`).join('')}</select></div>
+      <div><label class="lbl">Priority</label>
+        <select id="f-pri">${PRIORITIES.map(p=>`<option${p==='Medium'?' selected':''}>${p}</option>`).join('')}</select></div>
+      <div><label class="lbl">Status</label>
+        <select id="f-status-log"><option>Open</option></select></div>
+    </div>
+    <button class="btn btn-primary" onclick="submitTask()">✅ Submit Item</button>
   </div>`;
 }
 
-// Voice Recognition
-function toggleVoice(){
-  if(isListening){stopVoice();return;}
-  startVoice();
+function submitTask(){
+  const title=document.getElementById('f-title').value.trim();
+  if(!title){notify('Please fill the Title.','error');return;}
+  tasks.unshift({
+    id:uid(),
+    title,
+    description:document.getElementById('f-desc').value.trim(),
+    type:document.getElementById('f-type-log').value,
+    shift:document.getElementById('f-shift-log').value,
+    priority:document.getElementById('f-pri').value,
+    status:'Open',
+    submittedBy:curUser.name,
+    submittedByEmail:curUser.email,
+    assignedTo:'',
+    date:new Date().toISOString(),
+    dateClosed:''
+  });
+  save();
+  notify('✅ Item logged successfully!');
+  showView('dashboard');
 }
 
+// ─── VOICE ────────────────────────────────────────────────────────────
+function toggleVoice(){isListening?stopVoice():startVoice();}
 function startVoice(){
-  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SpeechRecognition){notify('Voice not supported on this browser. Try Chrome.','error');return;}
-  recognition=new SpeechRecognition();
-  recognition.lang='en-IN';
-  recognition.continuous=false;
-  recognition.interimResults=true;
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){notify('Voice not supported. Use Chrome.','error');return;}
+  recognition=new SR();recognition.lang='en-IN';recognition.continuous=false;recognition.interimResults=true;
   isListening=true;
   document.getElementById('micBtn').classList.add('listening');
   document.getElementById('micBtn').textContent='⏹';
-  document.getElementById('aiStatus').textContent='🎙️ Listening... speak now';
+  document.getElementById('aiStatus').textContent='🎙️ Listening...';
   document.getElementById('transcriptBox').textContent='';
-
   recognition.onresult=e=>{
     let interim='',final='';
     for(let i=e.resultIndex;i<e.results.length;i++){
@@ -301,163 +487,268 @@ function startVoice(){
       else interim+=e.results[i][0].transcript;
     }
     document.getElementById('transcriptBox').textContent=final||interim;
-    if(final){stopVoice();processWithAI(final);}
+    if(final){stopVoice();processVoice(final);}
   };
-  recognition.onerror=()=>{stopVoice();notify('Microphone error. Please try again.','error');};
+  recognition.onerror=()=>{stopVoice();notify('Mic error. Try again.','error');};
   recognition.onend=()=>{if(isListening)stopVoice();};
   recognition.start();
 }
-
 function stopVoice(){
-  isListening=false;
-  if(recognition)recognition.stop();
+  isListening=false;if(recognition)recognition.stop();
   const btn=document.getElementById('micBtn');
   if(btn){btn.classList.remove('listening');btn.textContent='🎤';}
-  const st=document.getElementById('aiStatus');
-  if(st)st.textContent='';
 }
-
-// Smart local processing — no AI needed
-function processWithAI(transcript){
-  const st=document.getElementById('aiStatus');
-  if(st)st.textContent='⚙️ Processing your speech...';
-
-  // Detect priority from keywords
-  const low=transcript.toLowerCase();
+function processVoice(t){
+  const low=t.toLowerCase();
   let priority='Medium';
-  if(/urgent|critical|important|high|emergency|immediately|asap|severe|broken|down|fail/i.test(low)) priority='High';
-  else if(/minor|small|low|whenever|later|sometime|not urgent|can wait/i.test(low)) priority='Low';
-
-  // Detect shift from keywords
+  if(/urgent|critical|important|high|emergency|asap|failed|down|broken|severe/i.test(low))priority='High';
+  else if(/minor|small|low|later|can wait|not urgent|whenever/i.test(low))priority='Low';
   let shift='';
-  if(/morning|day shift|first shift/i.test(low)) shift='Morning';
-  else if(/evening|afternoon|second shift/i.test(low)) shift='Evening';
-  else if(/night|third shift|overnight/i.test(low)) shift='Night';
-
-  // Build title — first meaningful sentence or first 8 words
-  const sentences=transcript.split(/[.,!?]/);
-  let title=sentences[0].trim();
-  const words=title.split(' ');
-  if(words.length>8) title=words.slice(0,8).join(' ')+'...';
-  // Capitalize first letter
+  if(/morning|first shift/i.test(low))shift='Morning';
+  else if(/afternoon|second shift/i.test(low))shift='Afternoon';
+  else if(/night|third shift|overnight/i.test(low))shift='Night';
+  let type='Task';
+  if(/email/i.test(low))type='Email';
+  else if(/chat|teams|message/i.test(low))type='Chat';
+  else if(/ticket|incident/i.test(low))type='Ticket';
+  else if(/note|fyi|info/i.test(low))type='Note';
+  const words=t.split(' ');
+  let title=words.slice(0,8).join(' ');
   title=title.charAt(0).toUpperCase()+title.slice(1);
-
-  // Rest goes to description
-  const desc=transcript.charAt(0).toUpperCase()+transcript.slice(1);
-
-  fillForm({title, description:desc, priority, shift});
-
-  if(st)st.textContent='✅ Form filled from your speech!';
-  const af=document.getElementById('aiFilled');
-  if(af)af.style.display='block';
+  const tf=document.getElementById('f-title');if(tf)tf.value=title;
+  const df=document.getElementById('f-desc');if(df)df.value=t.charAt(0).toUpperCase()+t.slice(1);
+  const pf=document.getElementById('f-pri');if(pf)pf.value=priority;
+  const sf=document.getElementById('f-shift-log');if(sf&&shift)sf.value=shift;
+  const typeF=document.getElementById('f-type-log');if(typeF)typeF.value=type;
+  document.getElementById('aiStatus').textContent='✅ Form filled from speech!';
 }
 
-function fillForm(data){
-  if(data.title&&document.getElementById('f-title'))document.getElementById('f-title').value=data.title;
-  if(data.description&&document.getElementById('f-desc'))document.getElementById('f-desc').value=data.description;
-  if(data.priority&&document.getElementById('f-pri'))document.getElementById('f-pri').value=data.priority;
-  if(data.shift&&SHIFTS.includes(data.shift)&&document.getElementById('f-taskshift'))document.getElementById('f-taskshift').value=data.shift;
+// ─── TASK DETAIL MODAL ────────────────────────────────────────────────
+function openTask(id){
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  const canClose=t.status==='In Progress'&&(t.assignedTo===curUser.name||curUser.role==='Admin'||curUser.role==='Supervisor');
+  const canTake=t.status==='Open';
+  const cfg=SHIFTS_CONFIG[t.shift]||{};
+  document.getElementById('modalTitle').textContent=T_ICON[t.type]+' '+t.title;
+  document.getElementById('modalBody').innerHTML=`
+    <div class="badges" style="margin-bottom:12px">
+      ${badge(P_ICON[t.priority]+' '+t.priority,P_COLOR[t.priority])}
+      ${badge(S_ICON[t.status]+' '+t.status,S_COLOR[t.status])}
+      ${badge(t.type,'#6264A7')}
+      ${badge(t.shift+' Shift','#0891b2')}
+    </div>
+    ${cfg.ist?`<div style="font-size:12px;color:#888;margin-bottom:10px">⏰ IST: ${cfg.ist} | EST: ${cfg.est}</div>`:''}
+    ${t.description?`<div style="font-size:13px;color:#555;background:#f7f7f7;padding:12px;border-radius:8px;margin-bottom:12px;line-height:1.6">${esc(t.description)}</div>`:''}
+    <div style="font-size:12px;color:#888;margin-bottom:6px">📤 Logged by <b>${esc(t.submittedBy)}</b> on ${fmt(t.date)}</div>
+    ${t.assignedTo?`<div style="font-size:12px;color:#3b82f6;margin-bottom:12px">🔄 Assigned to: <b>${esc(t.assignedTo)}</b></div>`:''}
+    ${t.dateClosed?`<div style="font-size:12px;color:#6b7280;margin-bottom:12px">✅ Closed on: ${fmt(t.dateClosed)}</div>`:''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      ${canTake?`<button class="btn btn-orange" onclick="takeTask('${id}')">🙋 Take This Task</button>`:''}
+      ${canClose?`<button class="btn btn-success" onclick="closeTask('${id}')">✅ Mark as Closed</button>`:''}
+      ${curUser.role==='Admin'?`<button class="btn btn-danger btn-sm" onclick="deleteTask('${id}')">🗑 Delete</button>`:''}
+    </div>`;
+  document.getElementById('modal').style.display='flex';
 }
 
-function submitTask(){
-  const name=document.getElementById('f-name').value.trim();
-  const title=document.getElementById('f-title').value.trim();
-  const desc=document.getElementById('f-desc').value.trim();
-  const shift=document.getElementById('f-taskshift').value;
-  const pri=document.getElementById('f-pri').value;
-  if(!title){notify('Please fill the Task Name.','error');return;}
-  const submittedBy=name||(profile?profile.name:'Unknown');
-  tasks.unshift({id:uid(),title,description:desc,shift,priority:pri,status:'Pending',submittedBy,role:profile?profile.role:'',date:new Date().toISOString()});
-  save();
-  notify('✅ Task logged successfully!');
-  showView('dashboard');
+function takeTask(id){
+  tasks=tasks.map(t=>t.id===id?{...t,status:'In Progress',assignedTo:curUser.name}:t);
+  save();notify(`✅ You took ownership of this task!`);
+  openTask(id);render(curView);
 }
+function closeTask(id){
+  tasks=tasks.map(t=>t.id===id?{...t,status:'Closed',dateClosed:new Date().toISOString()}:t);
+  save();notify('✅ Task closed successfully!');
+  document.getElementById('modal').style.display='none';
+  render(curView);
+}
+function deleteTask(id){
+  if(!confirm('Delete this item?'))return;
+  tasks=tasks.filter(t=>t.id!==id);save();
+  document.getElementById('modal').style.display='none';
+  notify('Item deleted.');render(curView);
+}
+function closeModal(e){if(e.target.id==='modal')document.getElementById('modal').style.display='none';}
 
+// ─── SUMMARY ─────────────────────────────────────────────────────────
 function renderSummary(){
   let html='<div class="card"><div class="section-title">📈 Shift-wise Summary</div>';
-  SHIFTS.forEach(sh=>{
-    const st=tasks.filter(t=>t.shift===sh);
-    const done=st.filter(t=>t.status==='Done').length;
-    const pct=st.length?Math.round(done/st.length*100):0;
+  ['Morning','Afternoon','Night'].forEach(sh=>{
+    const cfg=SHIFTS_CONFIG[sh];
+    const st=tasks.filter(t=>t.shift===sh||t.shift==='All');
+    const closed=st.filter(t=>t.status==='Closed').length;
+    const pct=st.length?Math.round(closed/st.length*100):0;
     html+=`<div style="margin-bottom:18px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><b>${sh} Shift</b><span style="font-size:13px;color:#888">${done}/${st.length} done (${pct}%)</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+        <b>${sh} Shift</b>
+        <span style="font-size:11px;color:#888">IST: ${cfg.ist} | EST: ${cfg.est}</span>
+      </div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:4px">Notify: ${cfg.notifyIST} IST / ${cfg.notifyEST} EST</div>
       <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%"></div></div>
       <div class="badges">${STATUSES.map(s=>{const c=st.filter(t=>t.status===s).length;return badge(S_ICON[s]+' '+s+': '+c,S_COLOR[s]);}).join('')}</div>
     </div>`;
   });
   html+='</div>';
-  const high=tasks.filter(t=>t.priority==='High'&&t.status!=='Done');
-  html+=`<div class="card"><div class="section-title">🔴 High Priority Pending (${high.length})</div>
-    ${high.length===0?'<div class="empty">✅ No high priority pending tasks!</div>':high.map(t=>taskCardHTML(t)).join('')}
+
+  // High priority open
+  const highOpen=sortTasks(tasks.filter(t=>t.priority==='High'&&t.status!=='Closed'));
+  html+=`<div class="card"><div class="section-title">🔴 High Priority — Open & In Progress (${highOpen.length})</div>
+    ${highOpen.length===0?'<div class="empty">✅ No high priority active items!</div>':highOpen.map(t=>taskCardHTML(t)).join('')}
   </div>`;
+
+  // By type
+  html+='<div class="card"><div class="section-title">📊 Items by Type</div><div class="badges" style="gap:10px">';
+  ITEM_TYPES.forEach(tp=>{
+    const c=tasks.filter(t=>t.type===tp).length;
+    html+=badge(T_ICON[tp]+' '+tp+': '+c,'#6264A7');
+  });
+  html+='</div></div>';
   document.getElementById('view-summary').innerHTML=html;
 }
 
-function openTask(id){
-  const t=tasks.find(x=>x.id===id);if(!t)return;
-  document.getElementById('modalTitle').textContent=t.title;
+// ─── ADMIN PANEL ─────────────────────────────────────────────────────
+function renderAdmin(){
+  if(curUser.role!=='Admin'){document.getElementById('view-admin').innerHTML='<div class="card empty">⛔ Admin access only.</div>';return;}
+  let html=`<div class="card">
+    <div class="section-title">⚙️ Admin Panel</div>
+    <div class="admin-section">
+      <div style="font-weight:700;margin-bottom:10px">👥 Team Members (${USERS.length})</div>
+      ${USERS.map(u=>`<div class="user-row">
+        <div>
+          <span style="font-weight:600">${esc(u.name)}</span>
+          <span style="font-size:11px;color:#888;margin-left:8px">${esc(u.email)}</span>
+        </div>
+        <div class="badges">
+          ${badge(u.role,ROLE_COLOR[u.role]||'#888')}
+          ${badge(u.shift,'#0891b2')}
+          ${badge(u.active?'Active':'Inactive',u.active?'#22c55e':'#ef4444')}
+        </div>
+      </div>`).join('')}
+      <div style="margin-top:12px;font-size:13px;color:#888">💡 To add/edit users, update the USERS array in the app code and re-upload to GitHub.</div>
+    </div>
+    <div class="admin-section" style="margin-top:14px">
+      <div style="font-weight:700;margin-bottom:10px">📊 Task Statistics</div>
+      <div class="badges">
+        ${badge('Total: '+tasks.length,'#6264A7')}
+        ${badge('Open: '+tasks.filter(t=>t.status==='Open').length,'#f59e0b')}
+        ${badge('In Progress: '+tasks.filter(t=>t.status==='In Progress').length,'#3b82f6')}
+        ${badge('Closed: '+tasks.filter(t=>t.status==='Closed').length,'#6b7280')}
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-danger btn-sm" onclick="clearClosedTasks()">🗑 Clear All Closed Tasks</button>
+        <button class="btn btn-primary btn-sm" onclick="downloadCSV()">⬇ Export All to Excel</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('view-admin').innerHTML=html;
+}
+
+function clearClosedTasks(){
+  if(!confirm('Remove all closed tasks?'))return;
+  tasks=tasks.filter(t=>t.status!=='Closed');save();
+  notify('All closed tasks cleared.');renderAdmin();
+}
+
+// ─── PROFILE ─────────────────────────────────────────────────────────
+function renderProfile(){
+  const sh=getCurrentShift();
+  const cfg=SHIFTS_CONFIG[sh];
+  document.getElementById('view-profile').innerHTML=`
+  <div class="card">
+    <div class="section-title">👤 My Profile</div>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+      <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#6264A7,#464775);color:white;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700">${curUser.name.charAt(0)}</div>
+      <div>
+        <div style="font-size:18px;font-weight:700">${esc(curUser.name)}</div>
+        <div style="font-size:13px;color:#888">${esc(curUser.email)}</div>
+        <div class="badges" style="margin-top:6px">${badge(curUser.role,ROLE_COLOR[curUser.role]||'#888')}${badge(curUser.shift+' Shift','#0891b2')}</div>
+      </div>
+    </div>
+    <div style="background:#f5f5ff;border-radius:10px;padding:16px">
+      <div style="font-weight:700;margin-bottom:10px">⏰ My Shift Timings</div>
+      ${['Morning','Afternoon','Night'].map(s=>{
+        const c=SHIFTS_CONFIG[s];
+        return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:13px">
+          <b>${s}</b>
+          <span>IST: ${c.ist}</span>
+          <span style="color:#888">EST: ${c.est}</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="margin-top:16px">
+      <div style="font-weight:700;margin-bottom:8px">📊 My Activity</div>
+      <div class="badges">
+        ${badge('Submitted: '+tasks.filter(t=>t.submittedByEmail===curUser.email).length,'#6264A7')}
+        ${badge('Assigned: '+tasks.filter(t=>t.assignedTo===curUser.name).length,'#3b82f6')}
+        ${badge('Closed: '+tasks.filter(t=>t.assignedTo===curUser.name&&t.status==='Closed').length,'#22c55e')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── TEAMS NOTIFICATION ───────────────────────────────────────────────
+function sendTeamsNotification(){
+  const open=sortTasks(tasks.filter(t=>t.status==='Open'));
+  const ip=sortTasks(tasks.filter(t=>t.status==='In Progress'));
+  const sh=getCurrentShift();
+  const cfg=SHIFTS_CONFIG[sh];
+  const msg=`📋 SHIFT HANDOVER SUMMARY — ${sh} Shift | ${new Date().toLocaleDateString('en-IN')}
+IST: ${cfg.ist} | EST: ${cfg.est}
+
+🔴 HIGH PRIORITY OPEN (${open.filter(t=>t.priority==='High').length})
+${open.filter(t=>t.priority==='High').map(t=>`• ${T_ICON[t.type]} ${t.title} | By: ${t.submittedBy}`).join('\n')||'  None'}
+
+🟡 MEDIUM PRIORITY OPEN (${open.filter(t=>t.priority==='Medium').length})
+${open.filter(t=>t.priority==='Medium').map(t=>`• ${T_ICON[t.type]} ${t.title} | By: ${t.submittedBy}`).join('\n')||'  None'}
+
+🟢 LOW PRIORITY OPEN (${open.filter(t=>t.priority==='Low').length})
+${open.filter(t=>t.priority==='Low').map(t=>`• ${T_ICON[t.type]} ${t.title} | By: ${t.submittedBy}`).join('\n')||'  None'}
+
+🔄 IN PROGRESS (${ip.length})
+${ip.map(t=>`• ${T_ICON[t.type]} ${t.title} | Assigned: ${t.assignedTo||'Unassigned'}`).join('\n')||'  None'}
+
+Total Open: ${open.length} | In Progress: ${ip.length}
+👉 App: https://ayyanartest-ui.github.io/shift-handover`;
+
+  document.getElementById('modalTitle').textContent='📢 Teams Notification Preview';
   document.getElementById('modalBody').innerHTML=`
-    <div class="badges" style="margin-bottom:12px">${badge(P_ICON[t.priority]+' '+t.priority,P_COLOR[t.priority])}${badge(S_ICON[t.status]+' '+t.status,S_COLOR[t.status])}${badge(t.shift+' Shift','#6264A7')}</div>
-    ${t.description?`<div class="desc-box">${esc(t.description)}</div>`:''}
-    <div style="font-size:13px;color:#888;margin-bottom:16px">Logged by <b>${esc(t.submittedBy)}</b>${t.role?' ('+esc(t.role)+')':''} on ${fmt(t.date)}</div>
-    <label class="lbl">Update Status</label>
-    <div class="status-btns">${STATUSES.map(s=>`<button class="status-btn" style="border-color:${S_COLOR[s]};background:${t.status===s?S_COLOR[s]:'white'};color:${t.status===s?'white':S_COLOR[s]}" onclick="updateStatus('${id}','${s}')">${S_ICON[s]} ${s}</button>`).join('')}</div>
-    <button class="btn btn-danger btn-sm" onclick="deleteTask('${id}')">🗑 Remove Task</button>`;
+    <div style="font-size:12px;color:#888;margin-bottom:10px">Copy this message and paste it in your Teams channel:</div>
+    <div style="background:#1e1e2e;color:#cdd6f4;border-radius:8px;padding:14px;font-family:monospace;font-size:12px;white-space:pre-wrap;line-height:1.7;max-height:340px;overflow-y:auto">${esc(msg)}</div>
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="copyNotif()">📋 Copy Message</button>
+      <div style="font-size:12px;color:#888;margin-top:8px">💡 To auto-send, set up Power Automate flow with the webhook URL.</div>
+    </div>`;
+  window._notifMsg=msg;
   document.getElementById('modal').style.display='flex';
 }
-
-function updateStatus(id,status){
-  tasks=tasks.map(t=>t.id===id?{...t,status}:t);save();
-  notify(`Status updated to "${status}"`);openTask(id);render(curView);
+function copyNotif(){
+  navigator.clipboard.writeText(window._notifMsg||'').then(()=>notify('✅ Copied! Paste in Teams channel.'));
 }
 
-function deleteTask(id){
-  if(!confirm('Remove this task?'))return;
-  tasks=tasks.filter(t=>t.id!==id);save();
-  document.getElementById('modal').style.display='none';
-  notify('Task removed.');render(curView);
-}
-
-function closeModal(e){if(e.target.id==='modal')document.getElementById('modal').style.display='none';}
-function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''; }
-
+// ─── EXPORT CSV ──────────────────────────────────────────────────────
 function downloadCSV(){
-  const headers=['Task Name','Description','Shift','Priority','Status','Submitted By','Role','Date'];
+  const headers=['Title','Type','Description','Shift','Priority','Status','Submitted By','Assigned To','Date Submitted','Date Closed'];
   const rows=tasks.map(t=>[
     `"${(t.title||'').replace(/"/g,'""')}"`,
+    t.type,
     `"${(t.description||'').replace(/"/g,'""')}"`,
     t.shift,t.priority,t.status,
     `"${(t.submittedBy||'').replace(/"/g,'""')}"`,
-    `"${(t.role||'').replace(/"/g,'""')}"`,
-    fmt(t.date)
+    `"${(t.assignedTo||'').replace(/"/g,'""')}"`,
+    fmt(t.date),fmt(t.dateClosed)
   ]);
   const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
-  const blob=new Blob([csv],{type:'text/csv'});
   const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=`Shift_Handover_${new Date().toISOString().slice(0,10)}.csv`;
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`ShiftHandover_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
   notify('✅ CSV downloaded!');
 }
 
-function init(){
-  if(tasks.length===0){
-    tasks=[
-      {id:uid(),title:'Database backup not completed',description:'Scheduled backup at 2PM failed. Check logs and retry.',shift:'Morning',priority:'High',status:'Pending',submittedBy:'Ravi Kumar',role:'Supervisor',date:new Date(Date.now()-3600000).toISOString()},
-      {id:uid(),title:'Customer ticket #4521 open',description:'Customer reported login issue. Needs follow-up call.',shift:'Morning',priority:'Medium',status:'In Progress',submittedBy:'Priya S',role:'Agent',date:new Date(Date.now()-7200000).toISOString()},
-    ];save();
-  }
-  document.getElementById('headerInfo').textContent=`Current Shift: ${getCurrentShift()} • ${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}`;
-  if(profile)document.getElementById('profileName').textContent=profile.name;
-  renderDashboard();
-}
-
-// Start
-if(profile){
-  document.getElementById('profileScreen').style.display='none';
-  init();
+// ─── INIT ─────────────────────────────────────────────────────────────
+if(curUser){
+  bootApp();
 } else {
-  document.getElementById('profileScreen').style.display='flex';
+  document.getElementById('loginScreen').style.display='flex';
 }
 </script>
 </body>
